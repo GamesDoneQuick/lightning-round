@@ -1,0 +1,84 @@
+<link rel="import" href="../../bower_components/iron-collapse/iron-collapse.html">
+<link rel="import" href="../../bower_components/iron-flex-layout/iron-flex-layout.html">
+<link rel="import" href="../../bower_components/polymerfire/firebase-query.html">
+<link rel="import" href="../../bower_components/polymerfire/firebase-document.html">
+<link rel="import" href="../lr-header/lr-header.html">
+<link rel="import" href="../lr-moderatable-tweet/lr-moderatable-tweet.html">
+
+<dom-module id="lr-moderation-queue">
+	<template>
+		<style>
+			:host {
+				@apply(--layout-vertical);
+			}
+
+			#undo {
+				font-weight: bold;
+				font-size: larger;
+				color: #00b0ff;
+			}
+
+			#rejectedHeader {
+				cursor: pointer;
+			}
+
+			#rejectedHeader:hover iron-icon {
+				border-radius: 100%;
+				background-color: white;
+			}
+
+			lr-header {
+				margin-top: 1em;
+			}
+		</style>
+
+		<firebase-query
+			id="repliesQuery"
+			path="/tweets/[[activeTweetId]]/replies">
+		</firebase-query>
+
+		<!-- Need both a document and query because of: https://github.com/firebase/polymerfire/issues/126 -->
+		<firebase-document
+			path="/tweets/[[activeTweetId]]/replies"
+			data="{{_rawReplies}}">
+		</firebase-document>
+
+		<lr-header>Approved Questions</lr-header>
+		<template id="approvedList" is="dom-repeat" items="[[replies]]" as="reply" filter="isApproved">
+			<lr-moderatable-tweet
+				tweet="[[reply]]"
+				on-approved="approve"
+				on-pended="pend"
+				on-rejected="reject">
+			</lr-moderatable-tweet>
+		</template>
+
+		<lr-header>To Be Moderated</lr-header>
+		<template id="pendingList" is="dom-repeat" items="[[replies]]" as="reply" filter="isPending">
+			<lr-moderatable-tweet
+				tweet="[[reply]]"
+				on-approved="approve"
+				on-pended="pend"
+				on-rejected="reject">
+			</lr-moderatable-tweet>
+		</template>
+
+		<lr-header id="rejectedHeader" on-tap="toggleCollapse">
+			Rejected Questions
+			<iron-icon icon="arrow-drop-down" hidden="[[collapseOpened]]"></iron-icon>
+			<iron-icon icon="arrow-drop-up" hidden="[[!collapseOpened]]"></iron-icon>
+		</lr-header>
+		<iron-collapse id="collapse" opened="{{collapseOpened}}">
+			<template id="rejectedList" is="dom-repeat" items="[[replies]]" as="reply" filter="isRejected">
+				<lr-moderatable-tweet
+					tweet="[[reply]]"
+					on-approved="approve"
+					on-pended="pend"
+					on-rejected="reject">
+				</lr-moderatable-tweet>
+			</template>
+		</iron-collapse>
+	</template>
+
+	<script src="lr-moderation-queue.js"></script>
+</dom-module>

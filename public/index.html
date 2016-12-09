@@ -1,0 +1,33 @@
+<!DOCTYPE html>
+<html>
+<head>
+	<meta charset="utf-8">
+	<title>Lightning Round</title>
+	<script src="bower_components/webcomponentsjs/webcomponents-lite.js"></script>
+	<!--<script src="bower_components/web-animations-js/web-animations.min.js"></script>-->
+	<link rel="manifest" href="manifest.json">
+	<link rel="stylesheet" href="https://fonts.googleapis.com/css?family=Montserrat">
+	<!--<link rel="import" href="bower_components/platinum-sw/platinum-sw-elements.html">-->
+	<link rel="import" href="elements/lr-app/lr-app.html">
+	<style>
+		body {
+			font-family: 'Montserrat', sans-serif;
+			background-color: #dedede;
+		}
+	</style>
+</head>
+<body>
+	<!--<platinum-sw-register-->
+		<!--auto-register-->
+		<!--skip-waiting-->
+		<!--clients-claim-->
+		<!--reload-on-install-->
+		<!--href="sw-import.js">-->
+		<!--<platinum-sw-cache-->
+			<!--default-cache-strategy="networkFirst">-->
+		<!--</platinum-sw-cache>-->
+	<!--</platinum-sw-register>-->
+
+	<lr-app></lr-app>
+</body>
+</html>

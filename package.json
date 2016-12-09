@@ -1,0 +1,23 @@
+{
+  "name": "lightning-round",
+  "version": "1.0.0",
+  "description": "",
+  "main": "index.js",
+  "scripts": {
+    "test": "echo \"Error: no test specified\" && exit 1"
+  },
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/GamesDoneQuick/lightning.git"
+  },
+  "author": "",
+  "license": "ISC",
+  "bugs": {
+    "url": "https://github.com/GamesDoneQuick/lightning/issues"
+  },
+  "homepage": "https://github.com/GamesDoneQuick/lightning#readme",
+  "devDependencies": {
+    "eslint": "^3.12.0",
+    "eslint-config-xo": "^0.17.0"
+  }
+}

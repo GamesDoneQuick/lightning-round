@@ -1,0 +1,108 @@
+<link rel="import" href="../../bower_components/iron-flex-layout/iron-flex-layout-classes.html">
+<link rel="import" href="../../bower_components/iron-flex-layout/iron-flex-layout.html">
+<link rel="import" href="../../bower_components/paper-button/paper-button.html">
+<link rel="import" href="../../bower_components/paper-dialog/paper-dialog.html">
+<link rel="import" href="../../bower_components/paper-input/paper-input.html">
+<link rel="import" href="../../bower_components/paper-material/paper-material.html">
+<link rel="import" href="../../bower_components/polymerfire/firebase-document.html">
+<link rel="import" href="../lr-header/lr-header.html">
+<link rel="import" href="../lr-tweet/lr-tweet.html">
+
+<dom-module id="lr-prompt">
+	<template>
+		<style include="iron-flex iron-flex-alignment">
+			:host {
+				height: 95px;
+				width: 100%;
+				margin-bottom: 4px;
+			}
+
+			#buttons {
+				margin-bottom: 12px;
+				@apply(--layout-horizontal);
+			}
+
+			#buttons paper-button {
+				width: 174px;
+				height: 38px;
+				background-color: #137400;
+				border-radius: 5px;
+				color: white;
+			}
+
+			#buttons > paper-button:first-child {
+				margin-left: 0;
+			}
+
+			#main {
+				background-color: #e1f7ff;
+				padding-left: 0;
+				padding-right: 10px;
+				padding-top: 5px;
+				padding-bottom: 7px;
+
+				@apply(--layout-horizontal);
+				@apply(--layout-center);
+				@apply(--layout-flex);
+			}
+
+			#tweet {
+				align-self: flex-start;
+				font-size: larger;
+				@apply(--layout-flex);
+			}
+
+			#newPromptDialog {
+				width: 100%;
+				max-width: 550px;
+			}
+		</style>
+
+		<firebase-document
+			path="/active_tweet_id"
+			data="{{activeTweetId}}">
+		</firebase-document>
+
+		<firebase-document
+			path="/tweets/[[activeTweetId]]"
+			data="{{activeTweet}}">
+		</firebase-document>
+
+		<firebase-query
+			id="repliesQuery"
+			path="/tweets/[[activeTweetId]]/replies">
+		</firebase-query>
+
+		<div id="buttons">
+			<paper-button raised on-tap="openNewPromptDialog">New Prompt</paper-button>
+			<paper-button raised on-tap="openResetModerationDialog">Reset Moderation</paper-button>
+		</div>
+
+		<lr-header>Call For Questions</lr-header>
+		<paper-material id="main">
+			<lr-tweet id="tweet" tweet="[[activeTweet]]"></lr-tweet>
+		</paper-material>
+
+		<paper-dialog id="newPromptDialog" with-backdrop>
+			<h2>New Prompt</h2>
+			<paper-input id="input" label="Paste a tweet URL..."></paper-input>
+			<div class="buttons">
+				<paper-button dialog-dismiss>Cancel</paper-button>
+				<paper-button dialog-confirm autofocus on-tap="selectQuestion">Accept</paper-button>
+			</div>
+		</paper-dialog>
+
+		<paper-dialog id="resetModerationDialog" with-backdrop>
+			<h2>Reset Moderation</h2>
+			<p>Are you sure you wish to <b>reset all moderation</b> for this prompt?</p>
+			<p>Doing so will un-moderate all replies, sending them all back to the "To Be Moderated" queue.</p>
+			<p>This cannot be undone.</p>
+			<div class="buttons">
+				<paper-button dialog-dismiss>No, Cancel</paper-button>
+				<paper-button dialog-confirm autofocus on-tap="resetModeration">Yes, Reset</paper-button>
+			</div>
+		</paper-dialog>
+	</template>
+
+	<script src="lr-prompt.js"></script>
+</dom-module>

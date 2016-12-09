@@ -1,0 +1,76 @@
+<link rel="import" href="../../bower_components/iron-flex-layout/iron-flex-layout.html">
+<link rel="import" href="../../bower_components/iron-flex-layout/iron-flex-layout-classes.html">
+<link rel="import" href="../../bower_components/paper-button/paper-button.html">
+
+<dom-module id="lr-user-details">
+	<template>
+		<style include="iron-flex iron-flex-alignment">
+			:host {
+				color: black;
+				font-size: 22px;
+				line-height: 33px;
+				font-weight: 400;
+				border-bottom: 1px solid black;
+				padding-bottom: 6px;
+				margin-bottom: 10px;
+
+				@apply(--layout-horizontal);
+				@apply(--layout-center);
+			}
+
+			b {
+				font-weight: 700;
+			}
+
+			#avatar {
+				margin-left: 0.5em;
+				margin-right: 0.5em;
+				border-radius: 10%;
+			}
+
+			paper-button {
+				width: 104px;
+				height: 38px;
+				background-color: #9e0b0f;
+				border-radius: 5px;
+				color: white;
+				font-size: 18px;
+				font-weight: 400;
+				line-height: 33px;
+				margin-right: 0;
+			}
+		</style>
+
+		<firebase-auth
+			id="auth"
+			user="{{user}}"
+			provider="twitter">
+		</firebase-auth>
+
+		<template is="dom-if" if="[[user]]">
+			<div class="layout horizontal center flex">
+				Welcome,
+				<img id="avatar" src="[[user.providerData.0.photoURL]]">
+				<b>[[user.displayName]]</b>
+			</div>
+		</template>
+
+		<paper-button raised on-tap="logout" hidden$="[[!user]]">Sign Out</paper-button>
+	</template>
+
+	<script>
+		Polymer({
+		    is: 'lr-user-details',
+
+			properties: {
+		        user: {
+		            type: Object
+				}
+			},
+
+			logout() {
+		        this.fire('logout');
+			}
+		});
+	</script>
+</dom-module>

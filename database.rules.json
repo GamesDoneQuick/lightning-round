@@ -1,0 +1,35 @@
+{
+	"rules": {
+		"admins": {
+			".read": true
+		},
+
+		"active_tweet_id": {
+			".read": true,
+			".write": "root.child('admins').hasChild(auth.uid)",
+			".validate": "newData.isString()"
+		},
+
+		"tweets": {
+			".read": true,
+			"$tweet_id": {
+				"replies": {
+					"$reply_id": {
+						"approval_status": {
+							".write": "root.child('admins').hasChild(auth.uid)",
+							"tier1": {
+								".validate": "newData.val() === 'approved' || newData.val() === 'rejected' || newData.val() === 'pending'"
+							},
+							"tier2": {
+								".validate": "newData.val() === 'approved' || newData.val() === 'rejected' || newData.val() === 'pending'"
+							},
+							"$other": {
+								".validate": false
+							}
+						}
+					}
+				}
+			}
+		}
+	}
+}

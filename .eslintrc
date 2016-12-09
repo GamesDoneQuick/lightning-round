@@ -1,0 +1,16 @@
+{
+	"extends": "xo/esnext",
+	"globals": {
+		"Polymer": true
+	},
+	"rules": {
+		"new-cap": [
+			2,
+			{
+				"capIsNewExceptions": [
+					"Polymer"
+				]
+			}
+		]
+	}
+}

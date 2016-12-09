@@ -1,0 +1,54 @@
+<link rel="import" href="../../bower_components/iron-flex-layout/iron-flex-layout.html">
+<link rel="import" href="../../bower_components/paper-button/paper-button.html">
+
+<dom-module id="lr-login-cover">
+	<template>
+		<style>
+			:host {
+				margin-top: 25%;
+				text-align: center;
+
+				@apply(--layout-vertical);
+				@apply(--layout-center);
+			}
+
+			#title {
+				font-size: 31px;
+				font-weight: 400;
+				line-height: 33px;
+			}
+
+			#login {
+				width: 368px;
+				height: 82px;
+				background-color: #137400;
+				border-radius: 15px;
+				color: white;
+				font-size: 36px;
+				font-weight: 400;
+				margin-top: 32px;
+				margin-bottom: 19px;
+			}
+
+			#subtitle {
+				font-size: 18px;
+				font-weight: 400;
+				line-height: 18px;
+			}
+		</style>
+
+		<div id="title">
+			#AGDQ2017<br/>
+			INTERVIEW MODERATION
+		</div>
+
+		<paper-button id="login" on-tap="login">SIGN IN</paper-button>
+
+		<div id="subtitle">
+			In order to moderate you must have a<br/>
+			pre-authorized Twitter account.
+		</div>
+	</template>
+
+	<script src="lr-login-cover.js"></script>
+</dom-module>
