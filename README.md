@@ -11,3 +11,6 @@ Our standalone app for harvesting interview questions from Twitter.
 	bower install
 	firebase deploy
 	```
+
+## Screenshot
+![Preview Screenshot](https://i.imgur.com/9bNR49G.png)
