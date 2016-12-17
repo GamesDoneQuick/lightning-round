@@ -39,6 +39,7 @@
 					}
 
 					updates[`${id}/approval_status/tier1`] = 'pending';
+					updates[`${id}/approval_status/tier2`] = 'pending';
 				}
 				this.$.repliesQuery.ref.update(updates);
 			});
