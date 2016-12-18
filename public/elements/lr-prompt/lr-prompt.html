@@ -78,10 +78,19 @@
 			<paper-button raised on-tap="openResetModerationDialog">Reset Moderation</paper-button>
 		</div>
 
-		<lr-header>Call For Questions</lr-header>
-		<paper-material id="main">
-			<lr-tweet id="tweet" tweet="[[activeTweet]]"></lr-tweet>
-		</paper-material>
+		<template is="dom-if" if="[[activeTweetId]]">
+			<lr-header>Call For Questions</lr-header>
+			<paper-material id="main">
+				<lr-tweet id="tweet" tweet="[[activeTweet]]"></lr-tweet>
+			</paper-material>
+		</template>
+
+		<template is="dom-if" if="[[!activeTweetId]]">
+			<p>
+				Please click "NEW PROMPT" and paste in the URL of a tweet that you'd
+				like to harvest and moderate replies from.
+			</p>
+		</template>
 
 		<paper-dialog id="newPromptDialog" with-backdrop>
 			<h2>New Prompt</h2>

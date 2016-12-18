@@ -51,8 +51,7 @@
 
 		<template is="dom-if" if="[[userIsAdmin(user, adminData)]]">
 			<lr-prompt active-tweet-id="{{activeTweetId}}"></lr-prompt>
-
-			<lr-moderation-queue active-tweet-id="[[activeTweetId]]"></lr-moderation-queue>
+			<lr-moderation-queue active-tweet-id="[[activeTweetId]]" hidden="[[!activeTweetId]]"></lr-moderation-queue>
 		</template>
 	</template>
 
