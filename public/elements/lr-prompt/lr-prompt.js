@@ -25,6 +25,12 @@
 		},
 
 		selectQuestion() {
+			if (this.$.input.value.toLowerCase().indexOf('gamesdonequick') < 0) {
+				this.$.input.value = null;
+				this.$.selectErrorToast.show();
+				return;
+			}
+
 			this.activeTweetId = this.$.input.value.split('/').pop();
 			this.$.input.value = null;
 		},
