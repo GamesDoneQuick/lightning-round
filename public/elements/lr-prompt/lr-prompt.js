@@ -32,7 +32,7 @@
 			}
 
 			let newActiveTweetId = this.$.input.value.split('/').pop();
-			const questionMarkIndex = this.activeTweetId.indexOf('?');
+			const questionMarkIndex = newActiveTweetId.indexOf('?');
 			if (questionMarkIndex > 0) {
 				newActiveTweetId = newActiveTweetId.slice(0, questionMarkIndex);
 			}
