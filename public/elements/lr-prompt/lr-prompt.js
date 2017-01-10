@@ -31,7 +31,12 @@
 				return;
 			}
 
-			this.activeTweetId = this.$.input.value.split('/').pop();
+			let newActiveTweetId = this.$.input.value.split('/').pop();
+			const questionMarkIndex = this.activeTweetId.indexOf('?');
+			if (questionMarkIndex > 0) {
+				newActiveTweetId = newActiveTweetId.slice(0, questionMarkIndex);
+			}
+			this.activeTweetId = newActiveTweetId;
 			this.$.input.value = null;
 		},
 
