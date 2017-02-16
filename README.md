@@ -11,6 +11,12 @@ Our standalone app for harvesting interview questions from Twitter.
 	git clone git@github.com:GamesDoneQuick/lightning-round.git
 	cd lightning-round
 	bower install
+	```
+3. Edit [`public/elements/lr-app/lr-app.html`](https://github.com/GamesDoneQuick/lightning-round/blob/master/public/elements/lr-app/lr-app.html#L20-L25)
+with your Firebase app's `auth-domain`, `database-url`, and `api-key`.
+4. Deploy to Firebase
+
+	```
 	firebase deploy
 	```
 
