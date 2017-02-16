@@ -8,7 +8,8 @@ Our standalone app for harvesting interview questions from Twitter.
   
 	```
 	npm install -g bower firebase-tools
-	git clone git@github.com:GamesDoneQuick/lightning-round-server.git
+	git clone git@github.com:GamesDoneQuick/lightning-round.git
+	cd lightning-round
 	bower install
 	firebase deploy
 	```
