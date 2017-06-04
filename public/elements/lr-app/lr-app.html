@@ -19,9 +19,9 @@
 		<!-- IMPORTANT: The firebase-app element needs to appear before other firebase-* elements -->
 		<firebase-app
 			id="firebase"
-			auth-domain="lightning-round.firebaseapp.com"
-			database-url="https://lightning-round.firebaseio.com"
-			api-key="AIzaSyCQGPyU0FnB2W6nz-kQoz9TxjI0_i7bb8I">
+			auth-domain="[[firebaseConfig.authDomain]]"
+			database-url="[[firebaseConfig.databaseUrl]]"
+			api-key="[[firebaseConfig.apiKey]]">
 		</firebase-app>
 
 		<firebase-auth
@@ -56,6 +56,18 @@
 	</template>
 
 	<script>
+		const PROD_CONFIG = {
+			authDomain: 'lightning-round.firebaseapp.com',
+			databaseUrl: 'https://lightning-round.firebaseio.com',
+			apiKey: 'AIzaSyCQGPyU0FnB2W6nz-kQoz9TxjI0_i7bb8I'
+		};
+
+		const DEV_CONFIG = {
+			authDomain: 'lightning-round-dev.firebaseapp.com',
+			databaseUrl: 'https://lightning-round-dev.firebaseio.com',
+			apiKey: 'AIzaSyDsaNRtDlHZ5LXHl14FOKBO53dfoxA5UFc'
+		};
+
 		Polymer({
 		    is: 'lr-app',
 
@@ -67,6 +79,17 @@
 				adminData: {
 		            type: Object,
 					value: null
+				},
+				firebaseConfig: {
+		        	type: Object,
+					readOnly: true,
+					value() {
+		        		// This can be removed once https://github.com/firebase/polymerfire/issues/221 is closed.
+						switch (location.hostname) {
+							case 'lightning-round.firebaseapp.com': firebase.initializeApp(PROD_CONFIG); break;
+							default: firebase.initializeApp(DEV_CONFIG); break;
+						}
+					}
 				}
 			},
 
