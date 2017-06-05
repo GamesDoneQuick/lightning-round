@@ -326,10 +326,13 @@
 			_registerServiceWorker() {
 				if (!('serviceWorker' in navigator)) {
 					console.info('Not registering service worker because it is unsupported.');
+					return;
 				}
 
-				if (window.protocol !== 'https:' && window.location.hostname !== 'localhost' && window.location.hostname.indexOf('127.') !== 0) {
+				if (window.location.protocol !== 'https:' &&
+					window.location.hostname !== 'localhost' && window.location.hostname.indexOf('127.') !== 0) {
 					console.log('Not registering service worker because this page is not served over HTTPS and it\'s not running on localhost.');
+					return;
 				}
 
 				console.log('Registering service worker.');
