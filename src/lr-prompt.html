@@ -1,17 +1,15 @@
-<link rel="import" href="../../bower_components/iron-flex-layout/iron-flex-layout-classes.html">
-<link rel="import" href="../../bower_components/iron-flex-layout/iron-flex-layout.html">
-<link rel="import" href="../../bower_components/paper-button/paper-button.html">
-<link rel="import" href="../../bower_components/paper-dialog/paper-dialog.html">
-<link rel="import" href="../../bower_components/paper-input/paper-input.html">
-<link rel="import" href="../../bower_components/paper-material/paper-material.html">
-<link rel="import" href="../../bower_components/paper-toast/paper-toast.html">
-<link rel="import" href="../../bower_components/polymerfire/firebase-document.html">
-<link rel="import" href="../lr-header/lr-header.html">
-<link rel="import" href="../lr-tweet/lr-tweet.html">
+<link rel="import" href="/bower_components/paper-button/paper-button.html">
+<link rel="import" href="/bower_components/paper-dialog/paper-dialog.html">
+<link rel="import" href="/bower_components/paper-input/paper-input.html">
+<link rel="import" href="/bower_components/paper-material/paper-material.html">
+<link rel="import" href="/bower_components/paper-toast/paper-toast.html">
+<link rel="import" href="/bower_components/polymer/polymer-element.html">
+<link rel="import" href="lr-header.html">
+<link rel="import" href="lr-tweet.html">
 
 <dom-module id="lr-prompt">
 	<template>
-		<style include="iron-flex iron-flex-alignment">
+		<style>
 			:host {
 				height: 95px;
 				width: 100%;
@@ -20,7 +18,7 @@
 
 			#buttons {
 				margin-bottom: 12px;
-				@apply(--layout-horizontal);
+				display: flex;
 			}
 
 			#buttons paper-button {
@@ -41,16 +39,15 @@
 				padding-right: 10px;
 				padding-top: 5px;
 				padding-bottom: 7px;
-
-				@apply(--layout-horizontal);
-				@apply(--layout-center);
-				@apply(--layout-flex);
+				display: flex;
+				align-items: center;
+				flex: 1;
 			}
 
 			#tweet {
 				align-self: flex-start;
 				font-size: larger;
-				@apply(--layout-flex);
+				flex: 1;
 			}
 
 			#newPromptDialog {
@@ -59,34 +56,19 @@
 			}
 		</style>
 
-		<firebase-document
-			path="/active_tweet_id"
-			data="{{activeTweetId}}">
-		</firebase-document>
-
-		<firebase-document
-			path="/tweets/[[activeTweetId]]"
-			data="{{activeTweet}}">
-		</firebase-document>
-
-		<firebase-query
-			id="repliesQuery"
-			path="/tweets/[[activeTweetId]]/replies">
-		</firebase-query>
-
 		<div id="buttons">
 			<paper-button raised on-tap="openNewPromptDialog">New Prompt</paper-button>
 			<paper-button raised on-tap="openResetModerationDialog">Reset Moderation</paper-button>
 		</div>
 
-		<template is="dom-if" if="[[activeTweetId]]">
+		<template is="dom-if" if="[[activeTweet]]">
 			<lr-header>Call For Questions</lr-header>
 			<paper-material id="main">
 				<lr-tweet id="tweet" tweet="[[activeTweet]]"></lr-tweet>
 			</paper-material>
 		</template>
 
-		<template is="dom-if" if="[[!activeTweetId]]">
+		<template is="dom-if" if="[[!activeTweet]]">
 			<p>
 				Please click "NEW PROMPT" and paste in the URL of a tweet that you'd
 				like to harvest and moderate replies from.
@@ -122,5 +104,53 @@
 		</paper-toast>
 	</template>
 
-	<script src="lr-prompt.js"></script>
+	<script>
+		class LrPrompt extends Polymer.Element {
+			static get is() {
+				return 'lr-prompt';
+			}
+
+			static get properties() {
+				return {
+					activeTweet: {
+						type: Object
+					}
+				};
+			}
+
+			openNewPromptDialog() {
+				this.$.newPromptDialog.open();
+			}
+
+			openResetModerationDialog() {
+				this.$.resetModerationDialog.open();
+			}
+
+			selectQuestion() {
+				if (this.$.input.value.toLowerCase().indexOf('gamesdonequick') < 0) {
+					this.$.input.value = null;
+					this.$.selectErrorToast.show();
+					return;
+				}
+
+				let newActiveTweetId = this.$.input.value.split('/').pop();
+				const questionMarkIndex = newActiveTweetId.indexOf('?');
+				if (questionMarkIndex > 0) {
+					newActiveTweetId = newActiveTweetId.slice(0, questionMarkIndex);
+				}
+				this.dispatchEvent(new CustomEvent('question-selected', {
+					detail: {value: newActiveTweetId},
+					bubbles: true,
+					composed: true
+				}));
+				this.$.input.value = null;
+			}
+
+			resetModeration() {
+				this.dispatchEvent(new CustomEvent('reset-moderation', {bubbles: true, composed: true}));
+			}
+		}
+
+		customElements.define(LrPrompt.is, LrPrompt);
+	</script>
 </dom-module>

@@ -4,20 +4,56 @@
   "description": "",
   "main": "index.js",
   "scripts": {
-    "test": "echo \"Error: no test specified\" && exit 1"
+    "lint": "npm run lint:javascript && polymer lint",
+    "lint:javascript": "eslint . --ext js,html --ignore-path .gitignore",
+    "build": "polymer build && node insert_raven_config.js",
+    "pretest": "npm run lint && polymer build",
+    "test": "echo \"No tests yet.\"",
+    "serve": "polymer serve"
   },
   "repository": {
     "type": "git",
     "url": "git+https://github.com/GamesDoneQuick/lightning.git"
   },
   "author": "",
-  "license": "ISC",
+  "license": "MIT",
   "bugs": {
     "url": "https://github.com/GamesDoneQuick/lightning/issues"
   },
   "homepage": "https://github.com/GamesDoneQuick/lightning#readme",
   "devDependencies": {
-    "eslint": "^3.12.0",
-    "eslint-config-xo": "^0.17.0"
+    "eslint": "^3.19.0",
+    "eslint-config-xo": "^0.18.2",
+    "eslint-plugin-html": "^2.0.3",
+    "git-rev": "^0.2.1",
+    "replace-in-file": "^2.5.0"
+  },
+  "eslintConfig": {
+    "extends": "xo/esnext",
+    "globals": {
+      "Polymer": true,
+      "firebase": true,
+      "Raven": true
+    },
+    "env": {
+      "browser": true,
+      "node": false
+    },
+    "plugins": [
+      "html"
+    ],
+    "rules": {
+      "new-cap": [
+        2,
+        {
+          "capIsNewExceptions": [
+            "Polymer"
+          ]
+        }
+      ],
+      "capitalized-comments": [
+        0
+      ]
+    }
   }
 }

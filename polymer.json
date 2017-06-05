@@ -1,0 +1,25 @@
+{
+	"entrypoint": "index.html",
+	"shell": "src/lr-app.html",
+	"sources": [
+		"src/**/*",
+		"images/**/*",
+		"bower.json"
+	],
+	"extraDependencies": [
+		"manifest.json",
+		"bower_components/webcomponentsjs/*.js"
+	],
+	"lint": {
+		"rules": ["polymer-2"]
+	},
+	"builds": [{
+		"addServiceWorker": true,
+		"addPushManifest": true,
+		"insertPrefetchLinks": false,
+		"swPrecacheConfig": "sw-precache-config.js",
+		"js": {"minify": false},
+		"css": {"minify": true},
+		"html": {"minify": true}
+	}]
+}

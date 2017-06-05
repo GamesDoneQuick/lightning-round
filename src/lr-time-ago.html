@@ -1,0 +1,77 @@
+<link rel="import" href="/bower_components/polymer/polymer-element.html">
+<script src="/bower_components/moment/min/moment.min.js"></script>
+
+<dom-module id="lr-time-ago">
+	<template>
+		<style>
+			:host {
+				display: inline-block;
+			}
+		</style>
+
+		<time datetime="[[datetime]]">[[timeago]]</time>
+	</template>
+
+	<script>
+		/* global moment */
+		moment.updateLocale('en', {
+			relativeTime: {
+				future: 'in %s',
+				past: '%s',
+				s: 'just now',
+				m: '1m',
+				mm: '%dm',
+				h: '1h',
+				hh: '%dh',
+				d: '1d',
+				dd: '%dd',
+				M: '1mo',
+				MM: '%dmo',
+				y: '1y',
+				yy: '%dy'
+			}
+		});
+
+		class LrTimeAgo extends Polymer.Element {
+			static get is() {
+				return 'lr-time-ago';
+			}
+
+			static get properties() {
+				return {
+					timeago: {
+						type: String,
+						value: '',
+						notify: true
+					},
+					datetime: {
+						type: String,
+						value: '0000-00-00T00:00:00.000Z',
+						observer: '_datetimeChanged'
+					}
+				};
+			}
+
+			ready() {
+				super.ready();
+				this.restartInterval();
+			}
+
+			restartInterval() {
+				this.recalculate();
+				clearInterval(this.interval);
+				this.interval = setInterval(this.recalculate.bind(this), 60000);
+			}
+
+			recalculate() {
+				this.timeago = moment(new Date(this.datetime)).fromNow();
+			}
+
+			_datetimeChanged() {
+				this.restartInterval();
+			}
+		}
+
+		customElements.define(LrTimeAgo.is, LrTimeAgo);
+	</script>
+</dom-module>

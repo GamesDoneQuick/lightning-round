@@ -1,6 +1,7 @@
-<link rel="import" href="../../bower_components/iron-flex-layout/iron-flex-layout.html">
-<link rel="import" href="../../bower_components/iron-flex-layout/iron-flex-layout-classes.html">
-<link rel="import" href="../../bower_components/paper-button/paper-button.html">
+<link rel="import" href="/bower_components/iron-flex-layout/iron-flex-layout-classes.html">
+<link rel="import" href="/bower_components/paper-button/paper-button.html">
+<link rel="import" href="/bower_components/paper-material/paper-material.html">
+<link rel="import" href="/bower_components/polymer/polymer-element.html">
 
 <dom-module id="lr-user-details">
 	<template>
@@ -13,9 +14,8 @@
 				border-bottom: 1px solid black;
 				padding-bottom: 6px;
 				margin-bottom: 10px;
-
-				@apply(--layout-horizontal);
-				@apply(--layout-center);
+				display: flex;
+				align-items: center;
 			}
 
 			b {
@@ -28,7 +28,7 @@
 				border-radius: 10%;
 			}
 
-			paper-button {
+			#logout {
 				width: 104px;
 				height: 38px;
 				background-color: #9e0b0f;
@@ -41,12 +41,6 @@
 			}
 		</style>
 
-		<firebase-auth
-			id="auth"
-			user="{{user}}"
-			provider="twitter">
-		</firebase-auth>
-
 		<template is="dom-if" if="[[user]]">
 			<div class="layout horizontal center flex">
 				Welcome,
@@ -55,22 +49,28 @@
 			</div>
 		</template>
 
-		<paper-button raised on-tap="logout" hidden$="[[!user]]">Sign Out</paper-button>
+		<paper-button id="logout" raised on-tap="logout" hidden$="[[!user]]">Sign Out</paper-button>
 	</template>
 
 	<script>
-		Polymer({
-		    is: 'lr-user-details',
+		class LrUserDetails extends Polymer.Element {
+			static get is() {
+				return 'lr-user-details';
+			}
 
-			properties: {
-		        user: {
-		            type: Object
-				}
-			},
+			static get properties() {
+				return {
+					user: {
+						type: Object
+					}
+				};
+			}
 
 			logout() {
-		        this.fire('logout');
+				this.dispatchEvent(new CustomEvent('logout', {bubbles: true, composed: true}));
 			}
-		});
+		}
+
+		customElements.define(LrUserDetails.is, LrUserDetails);
 	</script>
 </dom-module>

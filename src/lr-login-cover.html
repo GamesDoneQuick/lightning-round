@@ -1,5 +1,5 @@
-<link rel="import" href="../../bower_components/iron-flex-layout/iron-flex-layout.html">
-<link rel="import" href="../../bower_components/paper-button/paper-button.html">
+<link rel="import" href="/bower_components/paper-button/paper-button.html">
+<link rel="import" href="/bower_components/polymer/polymer-element.html">
 
 <dom-module id="lr-login-cover">
 	<template>
@@ -7,9 +7,9 @@
 			:host {
 				margin-top: 25%;
 				text-align: center;
-
-				@apply(--layout-vertical);
-				@apply(--layout-center);
+				display: flex;
+				flex-direction: column;
+				align-items: center;
 			}
 
 			#title {
@@ -38,11 +38,11 @@
 		</style>
 
 		<div id="title">
-			#AGDQ2017<br/>
+			#SGDQ2017<br/>
 			INTERVIEW MODERATION
 		</div>
 
-		<paper-button id="login" on-tap="login">SIGN IN</paper-button>
+		<paper-button id="login" on-tap="login" raised>SIGN IN</paper-button>
 
 		<div id="subtitle">
 			In order to moderate you must have a<br/>
@@ -50,5 +50,17 @@
 		</div>
 	</template>
 
-	<script src="lr-login-cover.js"></script>
+	<script>
+		class LrLoginCover extends Polymer.Element {
+			static get is() {
+				return 'lr-login-cover';
+			}
+
+			login() {
+				this.dispatchEvent(new CustomEvent('login', {bubbles: true, composed: true}));
+			}
+		}
+
+		customElements.define(LrLoginCover.is, LrLoginCover);
+	</script>
 </dom-module>

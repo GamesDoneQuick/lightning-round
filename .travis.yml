@@ -1,0 +1,42 @@
+language: node_js
+sudo: required
+dist: trusty
+addons:
+  firefox: "latest"
+  apt:
+    sources:
+      - google-chrome
+    packages:
+      - google-chrome-stable
+cache:
+  apt: true
+  directories:
+    - node_modules
+    - bower_components
+    - '$HOME/.npm'
+node_js:
+  - "7"
+install:
+  - npm install
+  - npm install -g polymer-cli firebase-tools sentry-cli-binary
+  - polymer install
+before_scrpt:
+  - sentry-cli releases set-commits "$TRAVIS_COMMIT" --auto
+  - sentry-cli releases new "$TRAVIS_COMMIT"
+script:
+  - xvfb-run npm run test
+  - xvfb-run npm run test:integration
+after_success:
+  # Finalize the Sentry release.
+  - sentry-cli releases finalize "$TRAVIS_COMMIT"
+
+  # Deploy this new build to Firebase Hosting.
+  - firebase deploy --token "$FIREBASE_TOKEN"
+
+  # Update the /deploy_commit_hash node with the commit hash of this new build.
+  # This will be seen by all open instances of Tier 1, which will then prompt the user to refresh the page
+  # to receive the latest patches.
+  - firebase database:set --token "$FIREBASE_TOKEN" --data \"$TRAVIS_COMMIT\" --confirm /deploy_commit_hash
+
+  # Tell Sentry about this new deploy as well.
+  - sentry-cli releases deploys "$TRAVIS_COMMIT" new -e "production"

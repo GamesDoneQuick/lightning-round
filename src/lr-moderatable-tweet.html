@@ -1,0 +1,191 @@
+<link rel="import" href="/bower_components/iron-icons/iron-icons.html">
+<link rel="import" href="/bower_components/paper-button/paper-button.html">
+<link rel="import" href="/bower_components/paper-material/paper-material.html">
+<link rel="import" href="/bower_components/polymer/lib/utils/debounce.html">
+<link rel="import" href="/bower_components/polymer/polymer-element.html">
+<link rel="import" href="/bower_components/polymerfire/firebase-query.html">
+<link rel="import" href="lr-tweet.html">
+
+<dom-module id="lr-moderatable-tweet">
+	<template>
+		<style>
+			:host {
+				display: block;
+				width: 100%;
+				box-sizing: border-box;
+				margin: 4px 0;
+			}
+
+			:host([approved]) #material {
+				background-color: #ccffd2;
+			}
+
+			:host([rejected]) #material {
+				background-color: #ffeaea;
+			}
+
+			#material {
+				width: 100%;
+				padding-left: 0;
+				padding-right: 6px;
+				padding-top: 5px;
+				padding-bottom: 7px;
+				background-color: white;
+				box-sizing: border-box;
+				display: flex;
+			}
+
+			#tweet {
+				flex: 1;
+			}
+
+			#buttons {
+				width: 106px;
+				display: flex;
+				align-items: center;
+				justify-content: center;
+			}
+
+			#buttons paper-button {
+				width: 46px;
+				height: 46px;
+				min-width: 46px;
+				border-radius: 5px;
+				color: white;
+				display: flex;
+				align-items: center;
+				justify-content: center;
+			}
+
+			#approve {
+				background-color: #137400;
+			}
+
+			#pend {
+				background-color: #eaeaea;
+				color: #a8a8a8;
+			}
+
+			#reject {
+				--paper-button: {
+					background-color: #9e0b0f;
+				};
+			}
+		</style>
+
+		<paper-material id="material" elevation="1">
+			<lr-tweet id="tweet" tweet="[[tweet]]"></lr-tweet>
+
+			<div id="buttons">
+				<paper-button raised id="approve" on-tap="approve" alt="Approve" hidden="[[approved]]">
+					<iron-icon icon="check"></iron-icon>
+				</paper-button>
+
+				<paper-button raised id="pend" on-tap="pend" alt="Revert to Pending" hidden="[[pending]]">
+					<iron-icon icon="undo"></iron-icon>
+				</paper-button>
+
+				<paper-button raised id="reject" on-tap="reject" alt="Reject" hidden="[[rejected]]">
+					<iron-icon icon="clear"></iron-icon>
+				</paper-button>
+			</div>
+		</paper-material>
+	</template>
+
+	<script>
+		(function () {
+			class LrModeratableTweet extends Polymer.Element {
+				static get is() {
+					return 'lr-moderatable-tweet';
+				}
+
+				static get properties() {
+					return {
+						tweet: {
+							type: Object
+						},
+						approved: {
+							type: Boolean,
+							reflectToAttribute: true,
+							readOnly: true,
+							value: false
+						},
+						rejected: {
+							type: Boolean,
+							reflectToAttribute: true,
+							readOnly: true,
+							value: false
+						},
+						pending: {
+							type: Boolean,
+							reflectToAttribute: true,
+							readOnly: true,
+							value: true
+						}
+					};
+				}
+
+				static get observers() {
+					return [
+						'tweetChanged(tweet.*)'
+					];
+				}
+
+				tweetChanged() {
+					// This gets fired many times due to Firebase's chunking, so we debounce.
+					this._debounceTweetChanged = Polymer.Debouncer.debounce(
+						this._debounceTweetChanged,
+						Polymer.Async.timeOut.after(10),
+						() => {
+							this.handleTweetChanged();
+						}
+					);
+				}
+
+				handleTweetChanged() {
+					const tweet = this.tweet;
+
+					if (!tweet || !tweet.approval_status) {
+						return;
+					}
+
+					this._setApproved(tweet.approval_status.tier1 === 'approved');
+					this._setRejected(tweet.approval_status.tier1 === 'rejected');
+					this._setPending(tweet.approval_status.tier1 === 'pending');
+				}
+
+				approve() {
+					this.dispatchEvent(new CustomEvent('approved', {
+						detail: {
+							tweet: this.tweet
+						},
+						bubbles: true,
+						composed: true
+					}));
+				}
+
+				pend() {
+					this.dispatchEvent(new CustomEvent('pended', {
+						detail: {
+							tweet: this.tweet
+						},
+						bubbles: true,
+						composed: true
+					}));
+				}
+
+				reject() {
+					this.dispatchEvent(new CustomEvent('rejected', {
+						detail: {
+							tweet: this.tweet
+						},
+						bubbles: true,
+						composed: true
+					}));
+				}
+			}
+
+			customElements.define(LrModeratableTweet.is, LrModeratableTweet);
+		})();
+	</script>
+</dom-module>

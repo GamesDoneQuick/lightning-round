@@ -1,0 +1,363 @@
+<link rel="import" href="/bower_components/paper-toast/paper-toast.html">
+<link rel="import" href="/bower_components/polymer/lib/utils/render-status.html">
+<link rel="import" href="/bower_components/polymer/polymer-element.html">
+<link rel="import" href="/bower_components/polymerfire/firebase-app.html">
+<link rel="import" href="/bower_components/polymerfire/firebase-auth.html">
+<link rel="import" href="lr-login-cover.html">
+<link rel="import" href="lr-moderation-queue.html">
+<link rel="import" href="lr-prompt.html">
+<link rel="import" href="lr-user-details.html">
+
+<dom-module id="lr-app">
+	<template>
+		<style>
+			:host {
+				display: block;
+				width: 100%;
+				max-width: 756px;
+				padding: 0 6px;
+			}
+
+			#toast {
+				display: none;
+				font-size: 16px;
+			}
+
+			#toast:not(:unresolved) {
+				display: block;
+			}
+
+			#toast a {
+				font-weight: 600;
+				margin-left: 16px;
+				color: #37A0CE;
+			}
+		</style>
+
+		<!-- IMPORTANT: The firebase-app element needs to appear before other firebase-* elements -->
+		<firebase-app
+			id="firebase"
+			auth-domain="[[firebaseConfig.authDomain]]"
+			database-url="[[firebaseConfig.databaseUrl]]"
+			api-key="[[firebaseConfig.apiKey]]">
+		</firebase-app>
+
+		<firebase-auth
+			id="auth"
+			user="{{user}}"
+			provider="twitter">
+		</firebase-auth>
+
+		<firebase-document
+			path="/deploy_commit_hash"
+			data="{{deployCommitHash}}">
+		</firebase-document>
+
+		<firebase-document
+			path="/admins/[[user.uid]]"
+			data="{{adminData}}">
+		</firebase-document>
+
+		<firebase-document
+			path="/active_tweet_id"
+			data="{{activeTweetId}}">
+		</firebase-document>
+
+		<firebase-document
+			path="/tweets/[[cleanActiveTweetId(activeTweetId)]]"
+			data="{{activeTweet}}">
+		</firebase-document>
+
+		<firebase-query
+			id="repliesQuery"
+			path="/tweets/[[cleanActiveTweetId(activeTweetId)]]/replies">
+		</firebase-query>
+
+		<!-- Need both a document and query because of: https://github.com/firebase/polymerfire/issues/126 -->
+		<firebase-document
+			path="/tweets/[[cleanActiveTweetId(activeTweetId)]]/replies"
+			data="{{_rawReplies}}">
+		</firebase-document>
+
+		<template is="dom-if" if="[[user]]">
+			<lr-user-details user="[[user]]" on-logout="logout"></lr-user-details>
+		</template>
+
+		<template is="dom-if" if="[[userIsLoggedInAndNotAdmin(user, adminData)]]">
+			<div>You have not been granted admin privileges.</div>
+			<div>Please contact an administrator if you need to be granted admin privileges.</div>
+		</template>
+
+		<template is="dom-if" if="[[!user]]">
+			<lr-login-cover on-login="login"></lr-login-cover>
+		</template>
+
+		<template is="dom-if" if="[[userIsAdmin(user, adminData)]]">
+			<lr-prompt
+				active-tweet="[[activeTweet]]"
+				on-reset-moderation="resetModeration"
+				on-question-selected="_handleQuestionSelected">
+			</lr-prompt>
+
+			<lr-moderation-queue
+				replies="[[replies]]"
+				hidden="[[isFalsey(activeTweet)]]"
+				on-approved="approve"
+				on-pended="pend"
+				on-rejected="reject">
+			</lr-moderation-queue>
+		</template>
+
+		<paper-toast id="toast">
+			<a id="toastAction" on-click="_handleToast" href="#"></a>
+		</paper-toast>
+	</template>
+
+	<script>
+		const PROD_CONFIG = {
+			authDomain: 'lightning-round.firebaseapp.com',
+			databaseUrl: 'https://lightning-round.firebaseio.com',
+			apiKey: 'AIzaSyCQGPyU0FnB2W6nz-kQoz9TxjI0_i7bb8I'
+		};
+
+		const DEV_CONFIG = {
+			authDomain: 'lightning-round-dev.firebaseapp.com',
+			databaseUrl: 'https://lightning-round-dev.firebaseio.com',
+			apiKey: 'AIzaSyDsaNRtDlHZ5LXHl14FOKBO53dfoxA5UFc'
+		};
+
+		class LrApp extends Polymer.Element {
+			static get is() {
+				return 'lr-app';
+			}
+
+			static get properties() {
+				return {
+					user: {
+						type: Object
+					},
+					adminData: {
+						type: Object
+					},
+					firebaseConfig: {
+						type: Object,
+						readOnly: true,
+						value() {
+							// This can be removed once https://github.com/firebase/polymerfire/issues/221 is closed.
+							switch (location.hostname) {
+								case 'lightning-round.firebaseapp.com':
+									return PROD_CONFIG;
+								default:
+									return DEV_CONFIG;
+							}
+						}
+					},
+					activeTweetId: {
+						type: String,
+						notify: true,
+						value: '0'
+					},
+					activeTweet: {
+						type: Object,
+						notify: true
+					},
+					replies: {
+						type: Object
+					},
+					deployCommitHash: {
+						type: String,
+						observer: '_deployCommitHashChanged'
+					},
+					_rawReplies: {
+						type: Object
+					}
+				};
+			}
+
+			static get observers() {
+				return [
+					'_onRawRepliesReceived(_rawReplies.*)'
+				];
+			}
+
+			ready() {
+				super.ready();
+				Polymer.RenderStatus.afterNextRender(this, this._registerServiceWorker.bind(this));
+			}
+
+			userIsLoggedInAndNotAdmin(user, adminData) {
+				return user && (!adminData || Object.keys(adminData).length === 0);
+			}
+
+			userIsAdmin(user, adminData) {
+				return user && adminData && typeof adminData === 'string';
+			}
+
+			login() {
+				return this.$.auth.signInWithPopup();
+			}
+
+			logout() {
+				return this.$.auth.signOut();
+			}
+
+			resetModeration() {
+				const updates = {};
+				this.$.repliesQuery.ref.once('value', snapshot => {
+					const replies = snapshot.val();
+					for (const id in replies) {
+						if (!{}.hasOwnProperty.call(replies, id)) {
+							continue;
+						}
+
+						updates[`${id}/approval_status/tier1`] = 'pending';
+						updates[`${id}/approval_status/tier2`] = 'pending';
+					}
+					this.$.repliesQuery.ref.update(updates);
+				});
+			}
+
+			approve(e) {
+				this.$.repliesQuery.ref.child(e.detail.tweet.id_str).child('approval_status').child('tier1').set('approved');
+			}
+
+			pend(e) {
+				this.$.repliesQuery.ref.child(e.detail.tweet.id_str).child('approval_status').child('tier1').set('pending');
+			}
+
+			reject(e) {
+				this.$.repliesQuery.ref.child(e.detail.tweet.id_str).child('approval_status').child('tier1').set('rejected');
+			}
+
+			cleanActiveTweetId(activeTweetId) {
+				return typeof activeTweetId === 'string' ? activeTweetId : '0';
+			}
+
+			isFalsey(value) {
+				if (!value) {
+					return true;
+				}
+
+				if (typeof value === 'object' && Object.keys(value).length === 0) {
+					return true;
+				}
+
+				return false;
+			}
+
+			_deployCommitHashChanged(newHash, oldHash) {
+				if (typeof newHash === 'string' && typeof oldHash === 'string') {
+					this._notifyNewVersion();
+				}
+			}
+
+			_handleQuestionSelected(e) {
+				this.activeTweetId = e.detail.value;
+			}
+
+			_onRawRepliesReceived() {
+				const newReplies = this._rawReplies;
+				const convertedReplies = [];
+				for (const item in newReplies) {
+					if (!{}.hasOwnProperty.call(newReplies, item)) {
+						continue;
+					}
+
+					convertedReplies.push(newReplies[item]);
+				}
+				this.replies = convertedReplies;
+			}
+
+			// Adapted from https://github.com/webcomponents/webcomponents.org/blob/a0a196444da62d3aa09fbb257e7516ec9032bfda/client/src/catalog-app.html
+			_notifyUser(options) {
+				this.$.toast.text = options.message;
+				if ({}.hasOwnProperty.call(options, 'buttonText')) {
+					this.$.toastAction.removeAttribute('hidden');
+					this.$.toastAction.textContent = options.buttonText;
+				} else {
+					this.$.toastAction.setAttribute('hidden', '');
+				}
+				this.$.toast.duration = typeof options.duration === 'number' ? options.duration : 5000;
+				this.$.toast.removeAttribute('opened'); // In case it was previously set
+				this.$.toast.setAttribute('opened', '');
+				this._currentToast = options;
+				this.dispatchEvent(new CustomEvent('event', {
+					detail: {
+						category: 'Notify toast',
+						action: 'Shown',
+						label: options.message
+					},
+					bubbles: true,
+					composed: true
+				}));
+			}
+
+			_notifyNewVersion() {
+				console.log('New version available');
+				this._notifyUser({
+					message: 'New version available',
+					buttonText: 'Reload to update',
+					buttonTapHandler() {
+						window.location.reload();
+					},
+					duration: 0
+				});
+			}
+
+			// Adapted from https://github.com/webcomponents/webcomponents.org/blob/a0a196444da62d3aa09fbb257e7516ec9032bfda/client/src/catalog-app.html
+			_handleToast() {
+				if (!this._currentToast || !this._currentToast.buttonTapHandler) {
+					return;
+				}
+
+				this.dispatchEvent(new CustomEvent('event', {
+					detail: {
+						category: 'Notify toast',
+						action: 'Clicked',
+						label: this._currentToast.buttonText
+					},
+					bubbles: true,
+					composed: true
+				}));
+				this._currentToast.buttonTapHandler();
+			}
+
+			// Adapted from https://github.com/webcomponents/webcomponents.org/blob/f7027235caece5b912aea04a6ea34ef05449ccc0/client/src/lazy-block.html
+			_registerServiceWorker() {
+				if (!('serviceWorker' in navigator)) {
+					console.info('Not registering service worker because it is unsupported.');
+				}
+
+				if (window.protocol !== 'https:' && window.location.hostname !== 'localhost' && window.location.hostname.indexOf('127.') !== 0) {
+					console.log('Not registering service worker because this page is not served over HTTPS and it\'s not running on localhost.');
+				}
+
+				console.log('Registering service worker.');
+				const baseUrl = document.querySelector('base').href;
+				const notifyNewVersion = this._notifyNewVersion.bind(this);
+				navigator.serviceWorker.register(`${baseUrl}service-worker.js`).then(registration => {
+					console.log('Service worker registered.');
+					registration.onupdatefound = function () {
+						const installingWorker = registration.installing;
+						installingWorker.onstatechange = function () {
+							switch (installingWorker.state) {
+								case 'installed':
+									if (navigator.serviceWorker.controller) {
+										notifyNewVersion();
+									}
+									break;
+								case 'redundant':
+									console.error('The installing service worker became redundant.');
+									break;
+								default:
+									break;
+							}
+						};
+					};
+				});
+			}
+		}
+
+		customElements.define(LrApp.is, LrApp);
+	</script>
+</dom-module>

@@ -1,3 +1,5 @@
+<link rel="import" href="/bower_components/polymer/polymer-element.html">
+
 <dom-module id="lr-header">
 	<template>
 		<style>
@@ -16,12 +18,16 @@
 			}
 		</style>
 
-		<content></content>
+		<slot></slot>
 	</template>
 
 	<script>
-		Polymer({
-		    is: 'lr-header'
-		});
+		class LrHeader extends Polymer.Element {
+			static get is() {
+				return 'lr-header';
+			}
+		}
+
+		customElements.define(LrHeader.is, LrHeader);
 	</script>
 </dom-module>

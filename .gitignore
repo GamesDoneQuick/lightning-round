@@ -50,6 +50,8 @@ jspm_packages
 
 bower_components
 
+build
+
 # JetBrains IDEs (IntelliJ/WebStorm)
 /.idea/compiler.xml
 /.idea/encodings.xml

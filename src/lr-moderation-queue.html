@@ -1,0 +1,89 @@
+<link rel="import" href="/bower_components/iron-collapse/iron-collapse.html">
+<link rel="import" href="/bower_components/polymer/polymer-element.html">
+<link rel="import" href="/bower_components/polymerfire/firebase-document.html">
+<link rel="import" href="/bower_components/polymerfire/firebase-query.html">
+<link rel="import" href="lr-header.html">
+<link rel="import" href="lr-moderatable-tweet.html">
+
+<dom-module id="lr-moderation-queue">
+	<template>
+		<style>
+			:host {
+				display: flex;
+				flex-direction: column;
+			}
+
+			#rejectedHeader {
+				cursor: pointer;
+			}
+
+			#rejectedHeader:hover iron-icon {
+				border-radius: 100%;
+				background-color: white;
+			}
+
+			lr-header {
+				margin-top: 1em;
+			}
+		</style>
+
+		<lr-header>Approved Questions</lr-header>
+		<template id="approvedList" is="dom-repeat" items="[[replies]]" as="reply" filter="isApproved">
+			<lr-moderatable-tweet tweet="[[reply]]"></lr-moderatable-tweet>
+		</template>
+
+		<lr-header>To Be Moderated</lr-header>
+		<template id="pendingList" is="dom-repeat" items="[[replies]]" as="reply" filter="isPending">
+			<lr-moderatable-tweet tweet="[[reply]]"></lr-moderatable-tweet>
+		</template>
+
+		<lr-header id="rejectedHeader" on-tap="toggleCollapse">
+			Rejected Questions
+			<iron-icon icon="arrow-drop-down" hidden="[[collapseOpened]]"></iron-icon>
+			<iron-icon icon="arrow-drop-up" hidden="[[!collapseOpened]]"></iron-icon>
+		</lr-header>
+		<iron-collapse id="collapse" opened="{{collapseOpened}}">
+			<template id="rejectedList" is="dom-repeat" items="[[replies]]" as="reply" filter="isRejected">
+				<lr-moderatable-tweet tweet="[[reply]]"></lr-moderatable-tweet>
+			</template>
+		</iron-collapse>
+	</template>
+
+	<script>
+		class LrModerationQueue extends Polymer.Element {
+			static get is() {
+				return 'lr-moderation-queue';
+			}
+
+			static get properties() {
+				return {
+					replies: {
+						type: Object
+					}
+				};
+			}
+
+			isPending(item) {
+				if (!item.approval_status) {
+					return true;
+				}
+
+				return item.approval_status.tier1 === 'pending';
+			}
+
+			isApproved(item) {
+				return item.approval_status && item.approval_status.tier1 === 'approved';
+			}
+
+			isRejected(item) {
+				return item.approval_status && item.approval_status.tier1 === 'rejected';
+			}
+
+			toggleCollapse() {
+				this.$.collapse.toggle();
+			}
+		}
+
+		customElements.define(LrModerationQueue.is, LrModerationQueue);
+	</script>
+</dom-module>

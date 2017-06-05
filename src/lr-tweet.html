@@ -1,6 +1,6 @@
-<link rel="import" href="../../bower_components/iron-flex-layout/iron-flex-layout.html">
-<link rel="import" href="../../bower_components/iron-image/iron-image.html">
-<link rel="import" href="../lr-time-ago/lr-time-ago.html">
+<link rel="import" href="/bower_components/iron-image/iron-image.html">
+<link rel="import" href="/bower_components/polymer/polymer-element.html">
+<link rel="import" href="lr-time-ago.html">
 
 <dom-module id="lr-tweet">
 	<template>
@@ -10,8 +10,8 @@
 				padding-left: 64px;
 				padding-right: 10px;
 				min-height: 50px;
-
-				@apply(--layout-vertical);
+				display: flex;
+				flex-direction: column;
 			}
 
 			#avatar {
@@ -99,5 +99,64 @@
 		<div id="body"></div>
 	</template>
 
-	<script src="lr-tweet.js"></script>
+	<script>
+		class LrTweet extends Polymer.Element {
+			static get is() {
+				return 'lr-tweet';
+			}
+
+			static get properties() {
+				return {
+					tweet: {
+						type: Object
+					},
+					profileUrl: {
+						type: String,
+						computed: 'computeProfileUrl(tweet.*)'
+					},
+					tweetUrl: {
+						type: String,
+						computed: 'computeTweetUrl(profileUrl, tweet.*)'
+					}
+				};
+			}
+
+			static get observers() {
+				return [
+					'populateBody(tweet.*)'
+				];
+			}
+
+			computeProfileUrl() {
+				const tweet = this.tweet;
+				if (!tweet || !tweet.user) {
+					return;
+				}
+
+				return `https://twitter.com/${tweet.user.screen_name}`;
+			}
+
+			computeTweetUrl(profileUrl) {
+				const tweet = this.tweet;
+				if (!profileUrl) {
+					return;
+				}
+
+				return `${profileUrl}/status/${tweet.id_str}`;
+			}
+
+			populateBody() {
+				// This gets fired many times due to Firebase's chunking, so we debounce.
+				this._debouncePopulateBody = Polymer.Debouncer.debounce(
+					this._debouncePopulateBody,
+					Polymer.Async.timeOut.after(10),
+					() => {
+						this.$.body.innerHTML = this.tweet.text;
+					}
+				);
+			}
+		}
+
+		customElements.define(LrTweet.is, LrTweet);
+	</script>
 </dom-module>
