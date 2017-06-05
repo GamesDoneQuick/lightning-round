@@ -44,7 +44,7 @@
 		<template is="dom-if" if="[[user]]">
 			<div class="layout horizontal center flex">
 				Welcome,
-				<img id="avatar" src="[[user.providerData.0.photoURL]]">
+				<img id="avatar" src="[[httpsify(user.providerData.0.photoURL)]]">
 				<b>[[user.displayName]]</b>
 			</div>
 		</template>
@@ -68,6 +68,10 @@
 
 			logout() {
 				this.dispatchEvent(new CustomEvent('logout', {bubbles: true, composed: true}));
+			}
+
+			httpsify(url) {
+				return url.replace(/^http:/i, 'https:');
 			}
 		}
 
