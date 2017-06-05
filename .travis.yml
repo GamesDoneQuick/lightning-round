@@ -17,15 +17,16 @@ cache:
 node_js:
   - "7"
 install:
+  - npm install -g polymer-cli
+  - npm install -g firebase-tools
+  - npm install -g sentry-cli-binary
   - npm install
-  - npm install -g polymer-cli firebase-tools sentry-cli-binary
   - polymer install
-before_scrpt:
+before_script:
   - sentry-cli releases set-commits "$TRAVIS_COMMIT" --auto
   - sentry-cli releases new "$TRAVIS_COMMIT"
 script:
   - xvfb-run npm run test
-  - xvfb-run npm run test:integration
 after_success:
   # Finalize the Sentry release.
   - sentry-cli releases finalize "$TRAVIS_COMMIT"
