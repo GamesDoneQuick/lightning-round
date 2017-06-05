@@ -1,4 +1,4 @@
-# lightning-round
+# lightning-round [![Build Status](https://travis-ci.org/GamesDoneQuick/lightning-round.svg?branch=master)](https://travis-ci.org/GamesDoneQuick/lightning-round)
 Our standalone app for harvesting interview questions from Twitter.
 
 ## Setup
