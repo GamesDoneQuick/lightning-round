@@ -10,6 +10,12 @@
 			".validate": "newData.isString()"
 		},
 
+		"deploy_commit_hash": {
+			".read": true,
+			".write": false,
+			".validate": "newData.isString()"
+		},
+
 		"tweets": {
 			".read": true,
 			"$tweet_id": {
