@@ -1,13 +1,6 @@
 language: node_js
 sudo: required
 dist: trusty
-addons:
-  firefox: "latest"
-  apt:
-    sources:
-      - google-chrome
-    packages:
-      - google-chrome-stable
 cache:
   apt: true
   directories:
@@ -21,9 +14,9 @@ install:
   - npm install -g firebase-tools
   - npm install -g sentry-cli-binary
   - npm install
-  - polymer install
 before_script:
-  - sentry-cli releases set-commits "$TRAVIS_COMMIT" --auto
+  # We must convert the slug to lowercase, which is what ${TRAVIS_REPO_SLUG,,} does.
+  - sentry-cli releases set-commits "$TRAVIS_COMMIT" --commit "${TRAVIS_REPO_SLUG,,}@$TRAVIS_COMMIT"
   - sentry-cli releases new "$TRAVIS_COMMIT"
 script:
   - xvfb-run npm run test

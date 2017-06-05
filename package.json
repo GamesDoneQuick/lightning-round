@@ -7,7 +7,7 @@
     "lint": "npm run lint:javascript && polymer lint",
     "lint:javascript": "eslint . --ext js,html --ignore-path .gitignore",
     "build": "polymer build && node insert_raven_config.js",
-    "pretest": "npm run lint && polymer build",
+    "pretest": "npm run lint && npm run build",
     "test": "echo \"No tests yet.\"",
     "serve": "polymer serve"
   },
