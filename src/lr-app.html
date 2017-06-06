@@ -7,6 +7,7 @@
 <link rel="import" href="lr-moderation-queue.html">
 <link rel="import" href="lr-prompt.html">
 <link rel="import" href="lr-user-details.html">
+<link rel="import" href="mixins/data-binding-helpers.html">
 
 <dom-module id="lr-app">
 	<template>
@@ -126,7 +127,7 @@
 			apiKey: 'AIzaSyDsaNRtDlHZ5LXHl14FOKBO53dfoxA5UFc'
 		};
 
-		class LrApp extends Polymer.Element {
+		class LrApp extends DataBindingHelpers(Polymer.Element) {
 			static get is() {
 				return 'lr-app';
 			}
@@ -235,18 +236,6 @@
 
 			cleanActiveTweetId(activeTweetId) {
 				return typeof activeTweetId === 'string' ? activeTweetId : '0';
-			}
-
-			isFalsey(value) {
-				if (!value) {
-					return true;
-				}
-
-				if (typeof value === 'object' && Object.keys(value).length === 0) {
-					return true;
-				}
-
-				return false;
 			}
 
 			_deployCommitHashChanged(newHash, oldHash) {

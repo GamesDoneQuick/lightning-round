@@ -6,6 +6,7 @@
 <link rel="import" href="/bower_components/polymer/polymer-element.html">
 <link rel="import" href="lr-header.html">
 <link rel="import" href="lr-tweet.html">
+<link rel="import" href="mixins/data-binding-helpers.html">
 
 <dom-module id="lr-prompt">
 	<template>
@@ -61,14 +62,14 @@
 			<paper-button raised on-tap="openResetModerationDialog">Reset Moderation</paper-button>
 		</div>
 
-		<template is="dom-if" if="[[activeTweet]]">
+		<template is="dom-if" if="[[isTruthy(activeTweet)]]">
 			<lr-header>Call For Questions</lr-header>
 			<paper-material id="main">
 				<lr-tweet id="tweet" tweet="[[activeTweet]]"></lr-tweet>
 			</paper-material>
 		</template>
 
-		<template is="dom-if" if="[[!activeTweet]]">
+		<template is="dom-if" if="[[isFalsey(activeTweet)]]">
 			<p>
 				Please click "NEW PROMPT" and paste in the URL of a tweet that you'd
 				like to harvest and moderate replies from.
@@ -105,7 +106,7 @@
 	</template>
 
 	<script>
-		class LrPrompt extends Polymer.Element {
+		class LrPrompt extends DataBindingHelpers(Polymer.Element) {
 			static get is() {
 				return 'lr-prompt';
 			}
