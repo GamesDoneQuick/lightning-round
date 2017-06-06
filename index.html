@@ -46,6 +46,9 @@
 	<!-- Load webcomponents-loader.js to check and load any polyfills your browser needs -->
 	<script src="/bower_components/webcomponentsjs/webcomponents-loader.js"></script>
 
+	<!-- Load the ShadyCSS apply-shim to make @apply statements work in our Polymer elements -->
+	<link rel="import" href="/bower_components/shadycss/apply-shim.html">
+
 	<!-- Load font -->
 	<link rel="stylesheet" href="https://fonts.googleapis.com/css?family=Montserrat">
 
@@ -59,19 +62,10 @@
 		window.onunhandledrejection = function (evt) {
 			Raven.captureException(evt.reason);
 		};
-
-		console.log('Waiting for WebComponentsReady.');
-		window.addEventListener('WebComponentsReady', () => {
-			console.log('WebComponentsReady, loading and inserting lr-app.');
-			const link = document.createElement('link');
-			link.rel = 'import';
-			link.href = 'src/lr-app.html';
-			document.head.appendChild(link);
-
-			const app = document.createElement('lr-app');
-			document.body.appendChild(app);
-		});
 	</script>
+
+	<!-- Load your application shell -->
+	<link rel="import" href="src/lr-app.html">
 
 	<!-- Add any global styles for body, document, etc. -->
 	<style>
@@ -97,10 +91,11 @@
 	</style>
 </head>
 <body>
-	<div id="loading">Loading...</div>
-	<noscript>
-		Please enable JavaScript to view this website.
-	</noscript>
-	<!-- Built using Polymer Starter Kit -->
+<lr-app></lr-app>
+<div id="loading">Loading...</div>
+<noscript>
+	Please enable JavaScript to view this website.
+</noscript>
+<!-- Built using Polymer Starter Kit -->
 </body>
 </html>
