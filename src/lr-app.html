@@ -1,3 +1,4 @@
+<link rel="import" href="/bower_components/paper-spinner/paper-spinner-lite.html">
 <link rel="import" href="/bower_components/paper-toast/paper-toast.html">
 <link rel="import" href="/bower_components/polymer/lib/utils/render-status.html">
 <link rel="import" href="/bower_components/polymer/polymer-element.html">
@@ -19,19 +20,26 @@
 				padding: 0 6px;
 			}
 
-			#toast {
+			#reloadToast {
 				display: none;
 				font-size: 16px;
 			}
 
-			#toast:not(:unresolved) {
+			#reloadToast:not(:unresolved) {
 				display: block;
 			}
 
-			#toast a {
+			#reloadToast a {
 				font-weight: 600;
 				margin-left: 16px;
 				color: #37A0CE;
+			}
+
+			#reloadToast-spinner {
+				position: absolute;
+				transform: translateY(-50%);
+				top: 50%;
+				right: 24px;
 			}
 		</style>
 
@@ -109,8 +117,13 @@
 			</lr-moderation-queue>
 		</template>
 
-		<paper-toast id="toast">
-			<a id="toastAction" on-click="_handleToast" href="#"></a>
+		<paper-toast id="reloadToast" text="New version available" duration="0">
+			<a on-tap="_reload" href="#" hidden="[[reloading]]">Reload to update</a>
+			<paper-spinner-lite
+				id="reloadToast-spinner"
+				hidden="[[!reloading]]"
+				active="[[reloading]]">
+			</paper-spinner-lite>
 		</paper-toast>
 	</template>
 
@@ -168,6 +181,10 @@
 					deployCommitHash: {
 						type: String,
 						observer: '_deployCommitHashChanged'
+					},
+					reloading: {
+						type: Boolean,
+						value: false
 					},
 					_rawReplies: {
 						type: Object
@@ -269,60 +286,6 @@
 				this.replies = convertedReplies;
 			}
 
-			// Adapted from https://github.com/webcomponents/webcomponents.org/blob/a0a196444da62d3aa09fbb257e7516ec9032bfda/client/src/catalog-app.html
-			_notifyUser(options) {
-				this.$.toast.text = options.message;
-				if ({}.hasOwnProperty.call(options, 'buttonText')) {
-					this.$.toastAction.removeAttribute('hidden');
-					this.$.toastAction.textContent = options.buttonText;
-				} else {
-					this.$.toastAction.setAttribute('hidden', '');
-				}
-				this.$.toast.duration = typeof options.duration === 'number' ? options.duration : 5000;
-				this.$.toast.removeAttribute('opened'); // In case it was previously set
-				this.$.toast.setAttribute('opened', '');
-				this._currentToast = options;
-				this.dispatchEvent(new CustomEvent('event', {
-					detail: {
-						category: 'Notify toast',
-						action: 'Shown',
-						label: options.message
-					},
-					bubbles: true,
-					composed: true
-				}));
-			}
-
-			_notifyNewVersion() {
-				console.log('New version available');
-				this._notifyUser({
-					message: 'New version available',
-					buttonText: 'Reload to update',
-					buttonTapHandler() {
-						window.location.reload();
-					},
-					duration: 0
-				});
-			}
-
-			// Adapted from https://github.com/webcomponents/webcomponents.org/blob/a0a196444da62d3aa09fbb257e7516ec9032bfda/client/src/catalog-app.html
-			_handleToast() {
-				if (!this._currentToast || !this._currentToast.buttonTapHandler) {
-					return;
-				}
-
-				this.dispatchEvent(new CustomEvent('event', {
-					detail: {
-						category: 'Notify toast',
-						action: 'Clicked',
-						label: this._currentToast.buttonText
-					},
-					bubbles: true,
-					composed: true
-				}));
-				this._currentToast.buttonTapHandler();
-			}
-
 			// Adapted from https://github.com/webcomponents/webcomponents.org/blob/f7027235caece5b912aea04a6ea34ef05449ccc0/client/src/lazy-block.html
 			_registerServiceWorker() {
 				if (!('serviceWorker' in navigator)) {
@@ -338,17 +301,16 @@
 
 				console.log('Registering service worker.');
 				const baseUrl = document.querySelector('base').href;
-				const notifyNewVersion = this._notifyNewVersion.bind(this);
 				navigator.serviceWorker.register(`${baseUrl}service-worker.js`).then(registration => {
 					console.log('Service worker registered.');
 					this._swRegistration = registration;
-					registration.onupdatefound = function () {
+					registration.onupdatefound = () => {
 						const installingWorker = registration.installing;
-						installingWorker.onstatechange = function () {
+						installingWorker.onstatechange = () => {
 							switch (installingWorker.state) {
 								case 'installed':
 									if (navigator.serviceWorker.controller) {
-										notifyNewVersion();
+										this.$.reloadToast.show();
 									}
 									break;
 								case 'redundant':
@@ -360,6 +322,12 @@
 						};
 					};
 				});
+			}
+
+			_reload() {
+				this.reloading = true;
+				this.$.reloadToast.text = 'Reloading...';
+				window.location.reload(true);
 			}
 		}
 
