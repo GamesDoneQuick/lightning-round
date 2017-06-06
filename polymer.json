@@ -8,7 +8,8 @@
 	],
 	"extraDependencies": [
 		"manifest.json",
-		"bower_components/webcomponentsjs/*.{js,map}"
+		"bower_components/webcomponentsjs/*.js",
+		"bower_components/**/*.map"
 	],
 	"lint": {
 		"rules": ["polymer-2"]
