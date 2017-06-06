@@ -198,7 +198,8 @@
 			static get observers() {
 				return [
 					'_onRawRepliesReceived(_rawReplies.*)',
-					'_promptToReloadPageIfAppropriate(_deployCommitHashHasChanged, _swRegistration)'
+					'_promptToReloadPageIfAppropriate(_deployCommitHashHasChanged, _swRegistration)',
+					'_updateSentryUserContext(user.*)'
 				];
 			}
 
@@ -328,6 +329,18 @@
 				this.reloading = true;
 				this.$.reloadToast.text = 'Reloading...';
 				window.location.reload(true);
+			}
+
+			_updateSentryUserContext() {
+				if (typeof this.user === 'object' && this.user !== null && Object.keys(this.user).length > 0) {
+					Raven.setUserContext({
+						email: this.user.email,
+						id: this.user.uid,
+						displayName: this.user.displayName
+					});
+				} else {
+					Raven.setUserContext();
+				}
 			}
 		}
 
