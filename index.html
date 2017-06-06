@@ -55,10 +55,10 @@
 	<!-- Load Raven, the library for the Sentry.io error-tracking service -->
 	<script src="https://cdn.ravenjs.com/3.15.0/raven.min.js"></script>
 	<script>
-		Raven.config('https://4c38b22c7cd749e887e2cb15973ce803@sentry.io/175826').install({
+		Raven.config('https://4c38b22c7cd749e887e2cb15973ce803@sentry.io/175826', {
 			release: '{{commit_hash}}', // populated by npm build script
 			environment: 'development'  // changed to "production" by npm build script
-		});
+		}).install();
 		window.onunhandledrejection = function (evt) {
 			Raven.captureException(evt.reason);
 		};
