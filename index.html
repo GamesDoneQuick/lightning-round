@@ -74,10 +74,25 @@
 			font-family: 'Montserrat', sans-serif;
 			min-height: 100vh;
 		}
+
+		#loading {
+			position: absolute;
+			top: 0;
+			left: 0;
+			width: 100vw;
+			height: 100vh;
+			display: flex;
+			justify-content: center;
+			align-items: center;
+			font-size: 32px;
+			transition: opacity 250ms;
+			user-select: none;
+		}
 	</style>
 </head>
 <body>
 	<lr-app></lr-app>
+	<div id="loading">Loading...</div>
 	<noscript>
 		Please enable JavaScript to view this website.
 	</noscript>

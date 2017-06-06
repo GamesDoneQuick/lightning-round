@@ -205,6 +205,7 @@
 
 			ready() {
 				super.ready();
+				document.getElementById('loading').style.opacity = 0;
 				Polymer.RenderStatus.afterNextRender(this, this._registerServiceWorker.bind(this));
 			}
 
