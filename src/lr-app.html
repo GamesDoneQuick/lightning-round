@@ -8,7 +8,6 @@
 <link rel="import" href="lr-moderation-queue.html">
 <link rel="import" href="lr-prompt.html">
 <link rel="import" href="lr-user-details.html">
-<link rel="import" href="mixins/data-binding-helpers.html">
 
 <dom-module id="lr-app">
 	<template>
@@ -104,13 +103,14 @@
 		<template is="dom-if" if="[[userIsAdmin(user, adminData)]]">
 			<lr-prompt
 				active-tweet="[[activeTweet]]"
+				active-tweet-is-defined="[[activeTweetIsDefined]]"
 				on-reset-moderation="resetModeration"
 				on-question-selected="_handleQuestionSelected">
 			</lr-prompt>
 
 			<lr-moderation-queue
 				replies="[[replies]]"
-				hidden="[[isFalsey(activeTweet)]]"
+				hidden="[[!activeTweetIsDefined]]"
 				on-approved="approve"
 				on-pended="pend"
 				on-rejected="reject">
@@ -140,7 +140,7 @@
 			apiKey: 'AIzaSyDsaNRtDlHZ5LXHl14FOKBO53dfoxA5UFc'
 		};
 
-		class LrApp extends DataBindingHelpers(Polymer.Element) {
+		class LrApp extends Polymer.Element {
 			static get is() {
 				return 'lr-app';
 			}
@@ -160,8 +160,10 @@
 							// This can be removed once https://github.com/firebase/polymerfire/issues/221 is closed.
 							switch (location.hostname) {
 								case 'lightning-round.firebaseapp.com':
+									console.log('Using production database.');
 									return PROD_CONFIG;
 								default:
+									console.log('Using development database.');
 									return DEV_CONFIG;
 							}
 						}
@@ -174,6 +176,10 @@
 					activeTweet: {
 						type: Object,
 						notify: true
+					},
+					activeTweetIsDefined: {
+						type: Boolean,
+						computed: '_computeActiveTweetIsDefined(activeTweet.*)'
 					},
 					replies: {
 						type: Object
@@ -255,6 +261,18 @@
 
 			cleanActiveTweetId(activeTweetId) {
 				return typeof activeTweetId === 'string' ? activeTweetId : '0';
+			}
+
+			_computeActiveTweetIsDefined() {
+				if (!this.activeTweet) {
+					return false;
+				}
+
+				if (typeof this.activeTweet === 'object' && Object.keys(this.activeTweet).length === 0) {
+					return false;
+				}
+
+				return true;
 			}
 
 			_deployCommitHashChanged(newHash, oldHash) {
