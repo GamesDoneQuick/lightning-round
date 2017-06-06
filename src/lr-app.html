@@ -170,13 +170,17 @@
 					},
 					_rawReplies: {
 						type: Object
+					},
+					_swRegistration: {
+						type: Object
 					}
 				};
 			}
 
 			static get observers() {
 				return [
-					'_onRawRepliesReceived(_rawReplies.*)'
+					'_onRawRepliesReceived(_rawReplies.*)',
+					'_promptToReloadPageIfAppropriate(_deployCommitHashHasChanged, _swRegistration)'
 				];
 			}
 
@@ -247,8 +251,16 @@
 
 			_deployCommitHashChanged(newHash, oldHash) {
 				if (typeof newHash === 'string' && typeof oldHash === 'string') {
-					this._notifyNewVersion();
+					this._deployCommitHashHasChanged = true;
 				}
+			}
+
+			_promptToReloadPageIfAppropriate(_deployCommitHashHasChanged, _swRegistration) {
+				if (!_deployCommitHashHasChanged || !_swRegistration) {
+					return;
+				}
+
+				_swRegistration.update();
 			}
 
 			_handleQuestionSelected(e) {
@@ -340,6 +352,7 @@
 				const notifyNewVersion = this._notifyNewVersion.bind(this);
 				navigator.serviceWorker.register(`${baseUrl}service-worker.js`).then(registration => {
 					console.log('Service worker registered.');
+					this._swRegistration = registration;
 					registration.onupdatefound = function () {
 						const installingWorker = registration.installing;
 						installingWorker.onstatechange = function () {

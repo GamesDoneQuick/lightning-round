@@ -8,9 +8,11 @@ cache:
 node_js:
   - "7"
 install:
+  - npm install -g bower
   - npm install -g polymer-cli
   - npm install -g firebase-tools
   - npm install -g sentry-cli-binary
+  - bower install
   - npm install
 before_script:
   # We must convert the slug to lowercase, which is what ${TRAVIS_REPO_SLUG,,} does.
