@@ -2,35 +2,33 @@ language: node_js
 cache:
   apt: true
   directories:
-    - node_modules
-    - bower_components
-    - '$HOME/.npm'
+  - node_modules
+  - bower_components
+  - "$HOME/.npm"
 node_js:
-  - "7"
+- '7'
 install:
-  - npm install -g bower
-  - npm install -g polymer-cli
-  - npm install -g firebase-tools
-  - npm install -g sentry-cli-binary
-  - bower install
-  - npm install
+- npm install -g bower
+- npm install -g polymer-cli
+- npm install -g firebase-tools
+- npm install -g sentry-cli-binary
+- bower install
+- npm install
 before_script:
-  # We must convert the slug to lowercase, which is what ${TRAVIS_REPO_SLUG,,} does.
-  - sentry-cli releases set-commits "$TRAVIS_COMMIT" --commit "${TRAVIS_REPO_SLUG,,}@$TRAVIS_COMMIT"
-  - sentry-cli releases new "$TRAVIS_COMMIT"
+- sentry-cli releases set-commits "$TRAVIS_COMMIT" --commit "${TRAVIS_REPO_SLUG,,}@$TRAVIS_COMMIT"
+- sentry-cli releases new "$TRAVIS_COMMIT"
 script:
-  - xvfb-run npm run test
+- xvfb-run npm run test
 after_success:
-  # Finalize the Sentry release.
-  - sentry-cli releases finalize "$TRAVIS_COMMIT"
-
-  # Deploy this new build to Firebase Hosting.
-  - firebase deploy --token "$FIREBASE_TOKEN"
-
-  # Update the /deploy_commit_hash node with the commit hash of this new build.
-  # This will be seen by all open instances of Tier 1, which will then prompt the user to refresh the page
-  # to receive the latest patches.
-  - firebase database:set --token "$FIREBASE_TOKEN" --data \"$TRAVIS_COMMIT\" --confirm /deploy_commit_hash
-
-  # Tell Sentry about this new deploy as well.
-  - sentry-cli releases deploys "$TRAVIS_COMMIT" new -e "production"
+- sentry-cli releases finalize "$TRAVIS_COMMIT"
+- firebase deploy --token "$FIREBASE_TOKEN"
+- firebase database:set --token "$FIREBASE_TOKEN" --data \"$TRAVIS_COMMIT\" --confirm
+  /deploy_commit_hash
+- sentry-cli releases deploys "$TRAVIS_COMMIT" new -e "production"
+notifications:
+  slack:
+    rooms:
+      secure: ORT9RjcIt+YNpeVs3ngULB5qVoY7snPGTDXfPE6DvxO+i5N8XKD2poccehlJW3Z1D1N6MnjGY8uhpFNCEJokMvYlVuxjnWnZJMWXaOCIYLRDdcfQY8inEb/aZIsgDeIy4JAbhmp+SGVmS3pvIPwg5QqAr1rB0NOiPINocnQveU1x7e77KGCtkyXS3Oa2MkCap1sAKoKy78QTP+CDVID3sZja4mtK2+eNm/B5Dh5+UhAPGb3bmV7V5Dunw4uFtAhebUGlBYqlW7WM88wIzvMysNe9g1eGgRNiGW75v4JOg4pNy2l8jDErQXxEwCKT/D3Ycnrga/NytC4fMVFLdJPX2YXwELfN7uCy3kq2s2w/3XvJCTdOfp9yDYIZkTKkeP/6X0NIJvMZZULy+OQd+QWpk8gE2ZrX4ThS/OhpQvlQKXaBJPAV1W+KoeExrlP4EFjxeg03tGExWhlsm/0Nafjx2bMrWOGf/iX2291gU7yAJnDfNn0cuPYHIlc5zUzkxzjkiOFzFbBUwUaUyTkCNKKWxNlRcCj9iBbocQTkMV/PKw6J+SFuMvBob9v8lJnbtBpoB549mCzFj1aZe3nr8SqxibayiQVNXHOj6BDgwQjPfl91XKJuUQ1eB5v+VNxwKjRd4ntk8R/UhBjha31RSFVo3FTGnS1H0uMlynjF7f6mNQo=
+    on_success: change
+    on_failure: always
+    on_pull_requests: false
