@@ -6,7 +6,7 @@ cache:
   - bower_components
   - "$HOME/.npm"
 node_js:
-- '7'
+- '8'
 install:
 - npm install -g bower polymer-cli firebase-tools sentry-cli-binary
 - bower install
