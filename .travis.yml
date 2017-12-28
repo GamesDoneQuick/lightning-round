@@ -8,10 +8,7 @@ cache:
 node_js:
 - '7'
 install:
-- npm install -g bower
-- npm install -g polymer-cli
-- npm install -g firebase-tools
-- npm install -g sentry-cli-binary
+- npm install -g bower polymer-cli firebase-tools sentry-cli-binary
 - bower install
 - npm install
 before_script:
