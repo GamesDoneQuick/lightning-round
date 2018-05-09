@@ -67,7 +67,7 @@
 
 		<firebase-document
 			path="/whitelist"
-			data="{{whitelist}}">
+			data="{{_rawWhitelist}}">
 		</firebase-document>
 
 		<firebase-query
@@ -109,17 +109,26 @@
 
 			static get properties() {
 				return {
-					whitelist: Array,
+					whitelist: {
+						type: Array,
+						observer: '_whitelistChanged'
+					},
 					users: Array,
 					_rawUsers: Array,
+					_rawWhitelist: Array,
 					_searchString: String
 				};
 			}
 
 			static get observers() {
 				return [
-					'_onRawUsersReceived(_rawUsers.*)'
+					'_onRawUsersReceived(_rawUsers.*)',
+					'_onRawWhitelistReceived(_rawWhitelist.*)'
 				];
+			}
+
+			_whitelistChanged() {
+				console.log('whitelist changed');
 			}
 
 			_onRawUsersReceived() {
@@ -134,6 +143,10 @@
 					convertedUsers.push(convertedUser);
 				}
 				this.users = convertedUsers;
+			}
+
+			_onRawWhitelistReceived() {
+				this.whitelist = Object.assign({}, this._rawWhitelist);
 			}
 
 			_calcChecked(uid, whitelist) {
