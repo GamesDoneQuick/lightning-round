@@ -44,7 +44,7 @@
 		},
 
 		"tweets": {
-			".read": true,
+			".read": "root.child('admins').hasChild(auth.uid) || root.child('whitelist').hasChild(auth.uid)",
 			"$tweet_id": {
 				"replies": {
 					"$reply_id": {
