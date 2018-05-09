@@ -28,13 +28,13 @@
 			}
 		</style>
 
-		<lr-header>Approved Questions</lr-header>
-		<template id="approvedList" is="dom-repeat" items="[[replies]]" as="reply" filter="isApproved">
+		<lr-header>To Be Moderated</lr-header>
+		<template id="pendingList" is="dom-repeat" items="[[replies]]" as="reply" filter="isPending">
 			<lr-moderatable-tweet tweet="[[reply]]"></lr-moderatable-tweet>
 		</template>
 
-		<lr-header>To Be Moderated</lr-header>
-		<template id="pendingList" is="dom-repeat" items="[[replies]]" as="reply" filter="isPending">
+		<lr-header>Approved Questions</lr-header>
+		<template id="approvedList" is="dom-repeat" items="[[replies]]" as="reply" filter="isApproved">
 			<lr-moderatable-tweet tweet="[[reply]]"></lr-moderatable-tweet>
 		</template>
 
