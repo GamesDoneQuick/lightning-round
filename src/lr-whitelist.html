@@ -109,10 +109,7 @@
 
 			static get properties() {
 				return {
-					whitelist: {
-						type: Array,
-						observer: '_whitelistChanged'
-					},
+					whitelist: Array,
 					users: Array,
 					_rawUsers: Array,
 					_rawWhitelist: Array,
@@ -125,10 +122,6 @@
 					'_onRawUsersReceived(_rawUsers.*)',
 					'_onRawWhitelistReceived(_rawWhitelist.*)'
 				];
-			}
-
-			_whitelistChanged() {
-				console.log('whitelist changed');
 			}
 
 			_onRawUsersReceived() {
