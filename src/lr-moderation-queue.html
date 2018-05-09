@@ -43,7 +43,7 @@
 			<iron-icon icon="arrow-drop-down" hidden="[[collapseOpened]]"></iron-icon>
 			<iron-icon icon="arrow-drop-up" hidden="[[!collapseOpened]]"></iron-icon>
 		</lr-header>
-		<iron-collapse id="collapse" opened="{{collapseOpened}}">
+		<iron-collapse id="collapse" opened="{{collapseOpened}}" no-animation>
 			<template id="rejectedList" is="dom-repeat" items="[[replies]]" as="reply" filter="isRejected">
 				<lr-moderatable-tweet tweet="[[reply]]"></lr-moderatable-tweet>
 			</template>
@@ -82,6 +82,10 @@
 
 			toggleCollapse() {
 				this.$.collapse.toggle();
+				if (this.$.collapse.opened) {
+					const scrollingElement = (document.scrollingElement || document.body);
+					scrollingElement.scrollTop = scrollingElement.scrollHeight;
+				}
 			}
 		}
 
