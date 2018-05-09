@@ -1,5 +1,6 @@
 <link rel="import" href="../bower_components/paper-checkbox/paper-checkbox.html">
 <link rel="import" href="../bower_components/paper-input/paper-input.html">
+<link rel="import" href="../bower_components/polymer/lib/mixins/mutable-data.html">
 <link rel="import" href="../bower_components/polymerfire/firebase-document.html">
 <link rel="import" href="../bower_components/polymerfire/firebase-query.html">
 
@@ -101,7 +102,7 @@
 	</template>
 
 	<script>
-		class LrWhitelist extends Polymer.Element {
+		class LrWhitelist extends Polymer.MutableData(Polymer.Element) {
 			static get is() {
 				return 'lr-whitelist';
 			}

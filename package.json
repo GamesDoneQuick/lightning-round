@@ -27,35 +27,5 @@
     "eslint-plugin-html": "^2.0.3",
     "git-rev": "^0.2.1",
     "replace-in-file": "^2.5.0"
-  },
-  "eslintConfig": {
-    "extends": "xo/esnext",
-    "globals": {
-      "Polymer": true,
-      "firebase": true,
-      "Raven": true,
-      "DataBindingHelpers": true
-    },
-    "env": {
-      "browser": true,
-      "node": false
-    },
-    "plugins": [
-      "html"
-    ],
-    "rules": {
-      "new-cap": [
-        2,
-        {
-          "capIsNewExceptions": [
-            "Polymer",
-            "DataBindingHelpers"
-          ]
-        }
-      ],
-      "capitalized-comments": [
-        0
-      ]
-    }
   }
 }

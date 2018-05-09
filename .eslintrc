@@ -1,0 +1,31 @@
+{
+	"extends": "xo/esnext",
+	"globals": {
+		"Polymer": true,
+		"firebase": true,
+		"Raven": true,
+		"DataBindingHelpers": true
+	},
+	"env": {
+		"browser": true,
+		"node": false
+	},
+	"plugins": [
+		"html"
+	],
+	"rules": {
+		"new-cap": [
+			2,
+			{
+				"capIsNewExceptions": [
+					"Polymer",
+					"Polymer.MutableData",
+					"DataBindingHelpers"
+				]
+			}
+		],
+		"capitalized-comments": [
+			0
+		]
+	}
+}
