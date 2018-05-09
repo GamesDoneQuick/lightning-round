@@ -138,6 +138,11 @@
 				this.users = convertedUsers;
 			}
 
+			/**
+			 * Workaround for dirty-checking.
+			 * Without this, _calcChecked never gets re-run when the whitelist is changed externally.
+			 * @private
+			 */
 			_onRawWhitelistReceived() {
 				this.whitelist = Object.assign({}, this._rawWhitelist);
 			}
