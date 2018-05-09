@@ -13,7 +13,6 @@
 				font-weight: 400;
 				border-bottom: 1px solid black;
 				padding-bottom: 6px;
-				margin-bottom: 10px;
 				display: flex;
 				align-items: center;
 			}
@@ -26,6 +25,10 @@
 				margin-left: 0.5em;
 				margin-right: 0.5em;
 				border-radius: 10%;
+			}
+
+			#admin {
+				font-size: 16px;
 			}
 
 			#logout {
@@ -45,7 +48,8 @@
 			<div class="layout horizontal center flex">
 				Welcome,
 				<img id="avatar" src="[[httpsify(user.providerData.0.photoURL)]]">
-				<b>[[user.displayName]]</b>
+				<b>[[user.displayName]]</b>&nbsp;
+				<span id="admin" hidden="[[!isAdmin]]">(Admin)</span>
 			</div>
 		</template>
 
@@ -62,6 +66,11 @@
 				return {
 					user: {
 						type: Object
+					},
+					isAdmin: {
+						type: Boolean,
+						reflectToAttribute: true,
+						value: false
 					}
 				};
 			}

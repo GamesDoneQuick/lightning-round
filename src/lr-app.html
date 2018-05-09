@@ -1,4 +1,7 @@
+<link rel="import" href="../bower_components/iron-pages/iron-pages.html">
 <link rel="import" href="../bower_components/paper-spinner/paper-spinner-lite.html">
+<link rel="import" href="../bower_components/paper-tabs/paper-tab.html">
+<link rel="import" href="../bower_components/paper-tabs/paper-tabs.html">
 <link rel="import" href="../bower_components/paper-toast/paper-toast.html">
 <link rel="import" href="../bower_components/polymer/lib/utils/render-status.html">
 <link rel="import" href="../bower_components/polymer/polymer-element.html">
@@ -8,6 +11,7 @@
 <link rel="import" href="lr-moderation-queue.html">
 <link rel="import" href="lr-prompt.html">
 <link rel="import" href="lr-user-details.html">
+<link rel="import" href="lr-whitelist.html">
 
 <dom-module id="lr-app">
 	<template>
@@ -17,6 +21,29 @@
 				width: 100%;
 				max-width: 756px;
 				padding: 0 6px;
+			}
+
+			#tabs {
+				@apply --layout-flex-none;
+				--paper-tabs-selection-bar-color: #8162A5;
+				--paper-tab-ink: #8162A5;
+				--paper-tabs-selection-bar: {
+					border-bottom-width: 4px;
+				};
+				--paper-tab: {
+					padding: 0;
+				};
+				--paper-tab-content: {
+					font-size: 20px;
+					font-weight: bold;
+				};
+				--paper-tab-content-unselected: {
+					background-color: #bcbcbc;
+				};
+			}
+
+			.page {
+				@apply --layout-vertical;
 			}
 
 			#reloadToast {
@@ -62,6 +89,11 @@
 		</firebase-document>
 
 		<firebase-document
+			path="/whitelist/[[user.uid]]"
+			data="{{whitelistData}}">
+		</firebase-document>
+
+		<firebase-document
 			path="/admins/[[user.uid]]"
 			data="{{adminData}}">
 		</firebase-document>
@@ -88,12 +120,12 @@
 		</firebase-document>
 
 		<template is="dom-if" if="[[user]]">
-			<lr-user-details user="[[user]]" on-logout="logout"></lr-user-details>
+			<lr-user-details user="[[user]]" is-admin="[[userIsAdmin(user, adminData)]]" on-logout="logout"></lr-user-details>
 		</template>
 
-		<template is="dom-if" if="[[userIsLoggedInAndNotAdmin(user, adminData)]]">
-			<div>You have not been granted admin privileges.</div>
-			<div>Please contact an administrator if you need to be granted admin privileges.</div>
+		<template is="dom-if" if="[[userIsLoggedInAndNotWhitelisted(user, whitelistData, adminData)]]">
+			<div>You have not been whitelisted.</div>
+			<div>Please contact an administrator if you need to be whitelisted.</div>
 		</template>
 
 		<template is="dom-if" if="[[!user]]">
@@ -101,20 +133,35 @@
 		</template>
 
 		<template is="dom-if" if="[[userIsAdmin(user, adminData)]]">
-			<lr-prompt
-				active-tweet="[[activeTweet]]"
-				active-tweet-is-defined="[[activeTweetIsDefined]]"
-				on-reset-moderation="resetModeration"
-				on-question-selected="_handleQuestionSelected">
-			</lr-prompt>
+			<paper-tabs id="tabs" selected="{{selectedTabIndex}}">
+				<paper-tab>Manage Tweets</paper-tab>
+				<paper-tab>Manage User Whitelist</paper-tab>
+			</paper-tabs>
+		</template>
 
-			<lr-moderation-queue
-				replies="[[replies]]"
-				hidden="[[!activeTweetIsDefined]]"
-				on-approved="approve"
-				on-pended="pend"
-				on-rejected="reject">
-			</lr-moderation-queue>
+		<template is="dom-if" if="[[userIsWhitelisted(user, whitelistData, adminData)]]">
+			<iron-pages selected="[[selectedTabIndex]]">
+				<div class="page">
+					<lr-prompt
+						active-tweet="[[activeTweet]]"
+						active-tweet-is-defined="[[activeTweetIsDefined]]"
+						on-reset-moderation="resetModeration"
+						on-question-selected="_handleQuestionSelected">
+					</lr-prompt>
+
+					<lr-moderation-queue
+						replies="[[replies]]"
+						hidden="[[!activeTweetIsDefined]]"
+						on-approved="approve"
+						on-pended="pend"
+						on-rejected="reject">
+					</lr-moderation-queue>
+				</div>
+
+				<div class="page">
+					<lr-whitelist></lr-whitelist>
+				</div>
+			</iron-pages>
 		</template>
 
 		<paper-toast id="reloadToast" text="New version available" duration="0">
@@ -128,6 +175,9 @@
 	</template>
 
 	<script>
+		const urlParams = new URLSearchParams(window.location.search);
+		const useProdDatabase = getBooleanUrlParam(urlParams, 'use-prod-database');
+
 		const PROD_CONFIG = {
 			authDomain: 'lightning-round.firebaseapp.com',
 			databaseUrl: 'https://lightning-round.firebaseio.com',
@@ -150,6 +200,9 @@
 					user: {
 						type: Object
 					},
+					whitelistData: {
+						type: Object
+					},
 					adminData: {
 						type: Object
 					},
@@ -157,6 +210,11 @@
 						type: Object,
 						readOnly: true,
 						value() {
+							if (useProdDatabase) {
+								console.log('use-prod-database is true; using producton database.');
+								return PROD_CONFIG;
+							}
+
 							// This can be removed once https://github.com/firebase/polymerfire/issues/221 is closed.
 							switch (location.hostname) {
 								case 'lightning-round.firebaseapp.com':
@@ -192,6 +250,10 @@
 						type: Boolean,
 						value: false
 					},
+					selectedTabIndex: {
+						type: Number,
+						value: 0
+					},
 					_rawReplies: {
 						type: Object
 					},
@@ -215,12 +277,22 @@
 				Polymer.RenderStatus.afterNextRender(this, this._registerServiceWorker.bind(this));
 			}
 
-			userIsLoggedInAndNotAdmin(user, adminData) {
-				return user && (!adminData || Object.keys(adminData).length === 0);
+			userIsLoggedInAndNotWhitelisted(user, whitelistData, adminData) {
+				return user &&
+					(!whitelistData || Object.keys(whitelistData).length === 0) &&
+					(!adminData || Object.keys(adminData).length === 0);
+			}
+
+			userIsWhitelisted(user, whitelistData, adminData) {
+				return user &&
+					(
+						(whitelistData && typeof whitelistData === 'string') ||
+						(adminData && typeof adminData === 'string')
+					);
 			}
 
 			userIsAdmin(user, adminData) {
-				return user && adminData && typeof adminData === 'string';
+				return user && (adminData && typeof adminData === 'string');
 			}
 
 			login() {
@@ -361,6 +433,10 @@
 					Raven.setUserContext();
 				}
 			}
+		}
+
+		function getBooleanUrlParam(urlParams, paramName) {
+			return urlParams.has(paramName) && urlParams.get(paramName) !== 'false' && urlParams.get(paramName) !== '0';
 		}
 
 		customElements.define(LrApp.is, LrApp);

@@ -1,0 +1,171 @@
+<link rel="import" href="../bower_components/paper-checkbox/paper-checkbox.html">
+<link rel="import" href="../bower_components/paper-input/paper-input.html">
+<link rel="import" href="../bower_components/polymerfire/firebase-document.html">
+<link rel="import" href="../bower_components/polymerfire/firebase-query.html">
+
+<dom-module id="lr-whitelist">
+	<template>
+		<style>
+			:host {
+				@apply --layout-vertical;
+				padding-top: 10px;
+			}
+
+			#filter {
+				@apply --layout-self-center;
+				width: 50%;
+			}
+
+			.user {
+				@apply --layout-horizontal;
+				@apply --layout-center;
+				padding: 5px;
+			}
+
+			.user:hover {
+				background-color: white !important;
+			}
+
+			.user:first-child {
+				margin-top: 0;
+			}
+
+			.user:last-child {
+				margin-bottom: 0;
+			}
+
+			.user:nth-child(odd) {
+				background-color: #cecece;
+			}
+
+			.user-name {
+				color: black;
+				font-weight: bold;
+			}
+
+			.user-name:hover {
+				color: #2b7bb9;
+				text-decoration: underline;
+			}
+
+			.user-email {
+				margin-left: auto;
+				font-size: 90%;
+			}
+
+			a {
+				text-transform: none;
+				text-decoration: none;
+			}
+		</style>
+
+		<firebase-document
+			path="/users"
+			data="{{_rawUsers}}">
+		</firebase-document>
+
+		<firebase-document
+			path="/whitelist"
+			data="{{whitelist}}">
+		</firebase-document>
+
+		<firebase-query
+			id="whitelistQuery"
+			path="/whitelist">
+		</firebase-query>
+
+		<paper-input
+			id="filter"
+			label="Filter"
+			placeholder="Search for a user..."
+			type="search"
+			value="{{_searchString}}">
+		</paper-input>
+
+		<template is="dom-repeat" items="[[users]]" as="user" filter="{{_computeFilter(_searchString)}}">
+			<div class="user">
+				<paper-checkbox
+					checked="[[_calcChecked(user.uid, whitelist)]]"
+					on-change="_updateWhitelistStatus">
+				</paper-checkbox>
+
+				<a class="user-name" href="https://twitter.com/intent/user?user_id=[[user.twitterUID]]"
+				   target="_blank"
+				   rel="noopener">
+					[[user.displayName]]
+				</a>
+
+				<span class="user-email">[[user.email]]</span>
+			</div>
+		</template>
+	</template>
+
+	<script>
+		class LrWhitelist extends Polymer.Element {
+			static get is() {
+				return 'lr-whitelist';
+			}
+
+			static get properties() {
+				return {
+					whitelist: Array,
+					users: Array,
+					_rawUsers: Array,
+					_searchString: String
+				};
+			}
+
+			static get observers() {
+				return [
+					'_onRawUsersReceived(_rawUsers.*)'
+				];
+			}
+
+			_onRawUsersReceived() {
+				const newUsers = this._rawUsers;
+				const convertedUsers = [];
+				for (const key in newUsers) {
+					if (!{}.hasOwnProperty.call(newUsers, key)) {
+						continue;
+					}
+
+					const convertedUser = Object.assign({uid: key}, newUsers[key]);
+					convertedUsers.push(convertedUser);
+				}
+				this.users = convertedUsers;
+			}
+
+			_calcChecked(uid, whitelist) {
+				if (!whitelist || !uid) {
+					return false;
+				}
+				return whitelist[uid] === true;
+			}
+
+			_updateWhitelistStatus(e) {
+				if (!e || !e.model) {
+					return;
+				}
+
+				this.$.whitelistQuery.ref.child(e.model.user.uid).set(e.target.checked);
+			}
+
+			_computeFilter(string) {
+				if (string) {
+					// Return a filter function for the current search string.
+					const regexp = new RegExp(string, 'ig');
+					return function (user) {
+						return regexp.test(user.displayName) ||
+							regexp.test(user.email) ||
+							regexp.test(user.twitterUID);
+					};
+				}
+
+				// Set filter to null to disable filtering.
+				return null;
+			}
+		}
+
+		customElements.define(LrWhitelist.is, LrWhitelist);
+	</script>
+</dom-module>

@@ -1,12 +1,39 @@
 {
 	"rules": {
 		"admins": {
-			".read": true
+			".read": "root.child('admins').hasChild(auth.uid)"
+		},
+
+		"whitelist": {
+			".read": true,
+			".write": "root.child('admins').hasChild(auth.uid)",
+			"$user_id": {
+				".write": "root.child('admins').hasChild(auth.uid)",
+				".validate": "newData.isBoolean()"
+			}
+		},
+
+		"users": {
+			".read": "root.child('admins').hasChild(auth.uid)",
+			"$user_id": {
+				"displayName": {
+					".validate": "newData.isString()"
+				},
+				"email": {
+					".validate": "newData.isString()"
+				},
+				"twitterUID": {
+					".validate": "newData.isString()"
+				},
+				"$other": {
+					".validate": false
+				}
+			}
 		},
 
 		"active_tweet_id": {
 			".read": true,
-			".write": "root.child('admins').hasChild(auth.uid)",
+			".write": "root.child('admins').hasChild(auth.uid) || root.child('whitelist').hasChild(auth.uid)",
 			".validate": "newData.isString()"
 		},
 
@@ -22,7 +49,7 @@
 				"replies": {
 					"$reply_id": {
 						"approval_status": {
-							".write": "root.child('admins').hasChild(auth.uid)",
+							".write": "root.child('admins').hasChild(auth.uid) || root.child('whitelist').hasChild(auth.uid)",
 							"tier1": {
 								".validate": "newData.val() === 'approved' || newData.val() === 'rejected' || newData.val() === 'pending'"
 							},
