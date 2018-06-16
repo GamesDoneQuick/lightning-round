@@ -201,7 +201,7 @@
 						type: Object
 					},
 					whitelistData: {
-						type: Object
+						type: Boolean
 					},
 					adminData: {
 						type: Object
@@ -278,15 +278,14 @@
 			}
 
 			userIsLoggedInAndNotWhitelisted(user, whitelistData, adminData) {
-				return user &&
-					(!whitelistData || Object.keys(whitelistData).length === 0) &&
+				return user && whitelistData !== true &&
 					(!adminData || Object.keys(adminData).length === 0);
 			}
 
 			userIsWhitelisted(user, whitelistData, adminData) {
 				return user &&
 					(
-						(whitelistData && typeof whitelistData === 'string') ||
+						(whitelistData === true) ||
 						(adminData && typeof adminData === 'string')
 					);
 			}
