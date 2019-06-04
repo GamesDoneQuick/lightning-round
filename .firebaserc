@@ -1,5 +1,6 @@
 {
   "projects": {
-    "default": "lightning-round"
+    "production": "lightning-round",
+    "development": "lightning-round-dev"
   }
 }
